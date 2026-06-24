@@ -1,0 +1,1999 @@
+/* ==========================================================================
+   ResuMatch ATS — Windows 10 Light System Styles
+   ========================================================================== */
+
+:root {
+  /* Windows 10 Palette */
+  --win-bg-desktop: #e6e6e6;
+  --win-bg-window: #ffffff;
+  --win-bg-sidebar: #f3f3f3;
+  --win-bg-hover: #e5e5e5;
+  --win-bg-active: #d0d0d0;
+  
+  --win-border-color: #d9d9d9;
+  --win-border-dark: #cccccc;
+  
+  /* Text colors */
+  --win-text-primary: #1a1a1a;
+  --win-text-secondary: #5a5a5a;
+  --win-text-muted: #767676;
+  --win-text-white: #ffffff;
+
+  /* Windows 10 Accent Blue */
+  --win-accent: #0078d7;
+  --win-accent-hover: #005a9e;
+  --win-accent-light: #e6f2fc;
+  
+  /* Semantic Colors */
+  --win-success: #107c41; /* Excel green */
+  --win-success-light: #e1f1e9;
+  --win-warning: #b75700; /* Windows amber */
+  --win-warning-light: #fdf2e9;
+  --win-danger: #a80000; /* Windows red */
+  --win-danger-light: #fdebee;
+  --win-info: #0066b3;
+
+  /* Fonts */
+  --win-font: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  
+  /* Transitions (Snappy/Fast for OS feel) */
+  --win-transition: 0.15s ease-in-out;
+}
+
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--win-font);
+  background-color: var(--win-bg-desktop);
+  color: var(--win-text-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Windows 10 App Layout Frame
+   -------------------------------------------------------------------------- */
+
+.win-window {
+  width: 100%;
+  height: calc(100vh - 32px);
+  max-width: 1500px;
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-dark);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Title Bar Styling */
+.win-title-bar {
+  height: 32px;
+  background-color: var(--win-bg-window);
+  border-bottom: 1px solid var(--win-border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 10px;
+  user-select: none;
+}
+
+.win-title-icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.win-app-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--win-accent);
+}
+
+.win-title-text {
+  font-size: 12px;
+  color: var(--win-text-primary);
+  font-weight: 400;
+}
+
+/* Title Bar Buttons */
+.win-window-controls {
+  display: flex;
+  height: 100%;
+}
+
+.win-control-btn {
+  width: 46px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  transition: background-color var(--win-transition);
+}
+
+.win-control-btn:hover {
+  background-color: var(--win-bg-hover);
+}
+
+.win-btn-close:hover {
+  background-color: #e81123 !important;
+}
+
+.win-btn-close:hover .win-close {
+  background-color: var(--win-text-white);
+}
+
+/* Control Icons */
+.win-control-icon {
+  position: relative;
+  display: inline-block;
+  background-color: var(--win-text-primary);
+}
+
+.win-min {
+  width: 10px;
+  height: 1px;
+  top: 4px;
+}
+
+.win-max {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--win-text-primary);
+  background: transparent !important;
+}
+
+.win-close {
+  width: 10px;
+  height: 10px;
+  background: transparent !important;
+}
+
+.win-close::before, .win-close::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 1px;
+  background-color: var(--win-text-primary);
+  top: 4px;
+  left: -1px;
+}
+
+.win-close::before {
+  transform: rotate(45deg);
+}
+
+.win-close::after {
+  transform: rotate(-45deg);
+}
+
+/* Command Bar (Toolbar) */
+.win-command-bar {
+  height: 40px;
+  background-color: var(--win-bg-sidebar);
+  border-bottom: 1px solid var(--win-border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 8px;
+}
+
+.win-cmd-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--win-font);
+  font-size: 12px;
+  color: var(--win-text-primary);
+  cursor: default;
+  height: 30px;
+}
+
+.win-cmd-btn:hover {
+  background-color: var(--win-bg-hover);
+  border-color: #cccccc;
+}
+
+.win-cmd-btn:active {
+  background-color: var(--win-bg-active);
+}
+
+.win-cmd-btn i {
+  width: 14px;
+  height: 14px;
+  color: var(--win-text-secondary);
+}
+
+.win-cmd-separator {
+  width: 1px;
+  height: 20px;
+  background-color: var(--win-border-color);
+  margin: 0 4px;
+}
+
+.win-cmd-status {
+  margin-left: auto;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-label {
+  color: var(--win-text-secondary);
+  font-weight: 500;
+}
+
+/* Badges */
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+}
+
+.badge-demo {
+  background-color: var(--win-warning-light);
+  color: var(--win-warning);
+  border-color: rgba(183, 87, 0, 0.3);
+}
+
+.badge-active {
+  background-color: var(--win-success-light);
+  color: var(--win-success);
+  border-color: rgba(16, 124, 65, 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   API Drawer Settings
+   -------------------------------------------------------------------------- */
+
+.win-config-drawer {
+  position: absolute;
+  top: 72px;
+  left: 0;
+  width: 100%;
+  background-color: var(--win-bg-window);
+  border-bottom: 1px solid var(--win-border-dark);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  animation: winSlideDown 0.15s ease-out forwards;
+}
+
+@keyframes winSlideDown {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--win-border-color);
+}
+
+.drawer-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--win-accent);
+}
+
+.drawer-header h3 i {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-close-drawer {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--win-text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.btn-close-drawer:hover {
+  color: var(--win-text-primary);
+}
+
+.btn-close-drawer i {
+  width: 16px;
+  height: 16px;
+}
+
+.drawer-body {
+  padding: 20px;
+}
+
+.drawer-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 600px) {
+  .drawer-fields-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--win-text-secondary);
+}
+
+.win-input {
+  height: 32px;
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+  color: var(--win-text-primary);
+  padding: 0 10px;
+  font-family: var(--win-font);
+  font-size: 12px;
+  outline: none;
+  width: 100%;
+}
+
+.win-input:focus {
+  border-color: var(--win-accent);
+  box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.2);
+}
+
+.win-input[readonly] {
+  background-color: #f0f0f0;
+  color: var(--win-text-muted);
+  cursor: not-allowed;
+}
+
+.win-select {
+  height: 32px;
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+  color: var(--win-text-primary);
+  padding: 0 8px;
+  font-family: var(--win-font);
+  font-size: 12px;
+  outline: none;
+}
+
+.win-select:focus {
+  border-color: var(--win-accent);
+}
+
+.win-select.full-width {
+  width: 100%;
+}
+
+.input-password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.btn-toggle-pwd {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  bottom: 1px;
+  width: 30px;
+  background: transparent;
+  border: none;
+  color: var(--win-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-toggle-pwd:hover {
+  background-color: var(--win-bg-hover);
+}
+
+.btn-toggle-pwd i {
+  width: 14px;
+  height: 14px;
+}
+
+/* CORS notice */
+.cors-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background-color: var(--win-warning-light);
+  border: 1px solid rgba(183, 87, 0, 0.2);
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  font-size: 11px;
+  color: var(--win-warning);
+}
+
+.cors-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cors-text {
+  line-height: 1.4;
+}
+
+/* Stale Dashboard Notice */
+.dashboard-stale-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--win-accent-light);
+  border: 1px solid rgba(0, 120, 215, 0.2);
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  font-size: 11px;
+  color: var(--win-accent);
+}
+
+.stale-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.stale-text {
+  line-height: 1.4;
+}
+
+.drawer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.api-feedback {
+  font-size: 11px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.api-feedback.success { color: var(--win-success); }
+.api-feedback.error { color: var(--win-danger); }
+
+
+/* --------------------------------------------------------------------------
+   Workspace Area Grid
+   -------------------------------------------------------------------------- */
+
+.win-workspace {
+  flex-grow: 1;
+  display: flex;
+  height: calc(100% - 72px);
+  overflow: hidden;
+}
+
+/* Sidebar Layout */
+.win-sidebar {
+  width: 280px;
+  background-color: var(--win-bg-sidebar);
+  border-right: 1px solid var(--win-border-color);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--win-text-secondary);
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 6px;
+}
+
+.sidebar-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--win-text-primary);
+}
+
+/* Custom Windows 10 Range Slider */
+.win-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: #cccccc;
+  outline: none;
+}
+
+.win-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 8px;
+  height: 20px;
+  background: var(--win-accent);
+  cursor: pointer;
+  border: 1px solid #767676;
+}
+
+.win-slider::-webkit-slider-thumb:hover {
+  background: #333333;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-value {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--win-accent);
+  background-color: var(--win-accent-light);
+  padding: 1px 4px;
+}
+
+/* Checkboxes */
+.advanced-checkboxes {
+  gap: 10px !important;
+}
+
+.win-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--win-text-primary);
+  cursor: default;
+}
+
+.win-checkbox-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--win-accent);
+}
+
+.win-input-small {
+  height: 28px;
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+  color: var(--win-text-primary);
+  padding: 0 8px;
+  font-family: var(--win-font);
+  font-size: 11px;
+  outline: none;
+  width: 80px;
+}
+
+.note-section {
+  margin-top: auto;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 12px;
+}
+
+.sidebar-note {
+  font-size: 10px;
+  color: var(--win-text-muted);
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------------------------------
+   Main Workspace Workspace & Tabs
+   -------------------------------------------------------------------------- */
+
+.win-main-panel {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--win-bg-window);
+}
+
+/* Window Workspace Tab Bar */
+.win-tab-bar {
+  display: flex;
+  background-color: var(--win-bg-sidebar);
+  border-bottom: 1px solid var(--win-border-color);
+  padding-left: 10px;
+  flex-shrink: 0;
+}
+
+.win-tab-btn {
+  background: transparent;
+  border: none;
+  border-right: 1px solid transparent;
+  border-left: 1px solid transparent;
+  border-bottom: 3px solid transparent;
+  padding: 10px 16px;
+  font-family: var(--win-font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--win-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+  transition: background-color var(--win-transition), color var(--win-transition);
+}
+
+.win-tab-btn:hover {
+  background-color: var(--win-bg-hover);
+  color: var(--win-text-primary);
+}
+
+.win-tab-btn.active {
+  background-color: var(--win-bg-window);
+  color: var(--win-text-primary);
+  border-left-color: var(--win-border-color);
+  border-right-color: var(--win-border-color);
+  border-bottom-color: var(--win-accent);
+  font-weight: 600;
+}
+
+.win-tab-btn i {
+  width: 14px;
+  height: 14px;
+  color: var(--win-text-secondary);
+}
+
+.win-tab-btn.active i {
+  color: var(--win-accent);
+}
+
+/* Workspace Panes Container */
+.win-pane-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.win-tab-pane {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: winFadeIn 0.15s ease-in-out forwards;
+}
+
+@keyframes winFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   Pane 1: Document Inputs
+   -------------------------------------------------------------------------- */
+
+.inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+@media (min-width: 900px) {
+  .inputs-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.input-panel-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: 380px;
+}
+
+.panel-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header-title {
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--win-text-primary);
+}
+
+.panel-header-title i {
+  width: 16px;
+  height: 16px;
+  color: var(--win-accent);
+}
+
+.win-textarea {
+  flex-grow: 1;
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+  color: var(--win-text-primary);
+  padding: 12px;
+  font-family: var(--win-font);
+  font-size: 12px;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  min-height: 180px;
+}
+
+.win-textarea:focus {
+  border-color: var(--win-accent);
+}
+
+/* Dropzone flat Windows 10 style */
+.win-drop-zone {
+  border: 1px dashed var(--win-border-dark);
+  background-color: #fbfbfb;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  position: relative;
+  transition: background-color var(--win-transition), border-color var(--win-transition);
+}
+
+.win-drop-zone:hover {
+  background-color: #f0f6fa;
+  border-color: var(--win-accent);
+}
+
+.win-drop-zone.dragover {
+  background-color: var(--win-accent-light);
+  border-color: var(--win-accent);
+}
+
+.win-drop-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--win-text-secondary);
+}
+
+.win-drop-zone:hover .win-drop-icon {
+  color: var(--win-accent);
+}
+
+.drop-label {
+  font-size: 11px;
+  color: var(--win-text-primary);
+}
+
+.drop-underline {
+  color: var(--win-accent);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.drop-sublabel {
+  font-size: 10px;
+  color: var(--win-text-muted);
+}
+
+/* File Selected Status Overlay */
+.win-file-status {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f6f6f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 5;
+}
+
+.success-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--win-success);
+}
+
+.file-name-span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--win-text-primary);
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-win-circle-danger {
+  background-color: #fdebee;
+  border: 1px solid rgba(168, 0, 0, 0.2);
+  color: var(--win-danger);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.btn-win-circle-danger:hover {
+  background-color: var(--win-danger);
+  color: var(--win-text-white);
+}
+
+.btn-win-circle-danger i {
+  width: 12px;
+  height: 12px;
+}
+
+/* Action button bar */
+.inputs-action-bar {
+  display: flex;
+  justify-content: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--win-border-color);
+  margin-top: 16px;
+  flex-shrink: 0;
+}
+
+.win-btn {
+  font-family: var(--win-font);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 16px;
+  border: 1px solid #7a7a7a;
+  background-color: #e1e1e1;
+  color: var(--win-text-primary);
+  cursor: default;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.win-btn:hover {
+  background-color: var(--win-bg-hover);
+  border-color: #5a5a5a;
+}
+
+.win-btn:active {
+  background-color: var(--win-bg-active);
+}
+
+.win-btn:disabled {
+  background-color: #cccccc !important;
+  color: #767676 !important;
+  border-color: #cccccc !important;
+  cursor: not-allowed;
+}
+
+.win-btn-large {
+  padding: 10px 24px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.win-btn-blue {
+  background-color: var(--win-accent);
+  color: var(--win-text-white);
+  border-color: var(--win-accent);
+}
+
+.win-btn-blue:hover:not(:disabled) {
+  background-color: var(--win-accent-hover);
+  border-color: var(--win-accent-hover);
+}
+
+.win-btn-gray {
+  background-color: transparent;
+  border-color: var(--win-border-color);
+  color: var(--win-text-secondary);
+}
+
+.win-btn-gray:hover {
+  background-color: var(--win-bg-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Pane 2: Chunk Playground
+   -------------------------------------------------------------------------- */
+
+.playground-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 750px) {
+  .playground-stats-bar {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.stat-card {
+  background-color: var(--win-bg-sidebar);
+  border: 1px solid var(--win-border-color);
+  padding: 10px;
+  text-align: center;
+}
+
+.stat-num {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--win-accent);
+}
+
+.stat-label {
+  font-size: 10px;
+  color: var(--win-text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Playground Work Grid */
+.playground-split-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+@media (min-width: 900px) {
+  .playground-split-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.chunk-explorer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: 350px;
+}
+
+.explorer-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--win-border-color);
+  padding-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.explorer-column-header h3 {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.btn-sm-win {
+  padding: 2px 8px !important;
+  height: 24px !important;
+  font-size: 10px !important;
+}
+
+.explorer-chunks-list {
+  flex-grow: 1;
+  border: 1px solid var(--win-border-color);
+  background-color: #fafafa;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.win-no-data-msg {
+  font-size: 11px;
+  color: var(--win-text-muted);
+  text-align: center;
+  margin: auto;
+  padding: 20px;
+}
+
+/* Individual Chunks Visual Card */
+.win-chunk-card {
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--win-transition);
+}
+
+.win-chunk-card:hover {
+  border-color: var(--win-text-secondary);
+}
+
+.chunk-card-meta {
+  background-color: var(--win-bg-sidebar);
+  border-bottom: 1px solid var(--win-border-color);
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chunk-badge-id {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--win-text-secondary);
+  background-color: #e1e1e1;
+  padding: 1px 6px;
+}
+
+.chunk-badge-section {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--win-accent);
+  background-color: var(--win-accent-light);
+  padding: 1px 6px;
+}
+
+.chunk-badge-size {
+  font-size: 9px;
+  color: var(--win-text-muted);
+}
+
+.chunk-card-text {
+  padding: 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  color: var(--win-text-primary);
+  max-height: 120px;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--win-border-color);
+}
+
+.chunk-card-textarea {
+  padding: 10px;
+  font-family: var(--win-font);
+  font-size: 11px;
+  line-height: 1.4;
+  border: none;
+  border-bottom: 1px solid var(--win-border-color);
+  width: 100%;
+  height: 120px;
+  resize: vertical;
+  outline: none;
+}
+
+.chunk-card-actions {
+  display: flex;
+  background-color: var(--win-bg-window);
+  padding: 4px 6px;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.btn-chunk-action {
+  background: transparent;
+  border: none;
+  font-family: var(--win-font);
+  font-size: 10px;
+  color: var(--win-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+}
+
+.btn-chunk-action:hover {
+  background-color: var(--win-bg-hover);
+  color: var(--win-text-primary);
+}
+
+.btn-chunk-action i {
+  width: 11px;
+  height: 11px;
+}
+
+.btn-chunk-delete:hover {
+  color: var(--win-danger) !important;
+  background-color: var(--win-danger-light) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Pane 3: Match Dashboard
+   -------------------------------------------------------------------------- */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  flex-grow: 1;
+}
+
+@media (min-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 320px 1fr;
+  }
+}
+
+.dashboard-scores-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.win-flat-card {
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+  padding: 16px;
+}
+
+.win-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--win-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--win-border-color);
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.win-card-title-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Score Circle layout */
+.score-radial-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.win-score-circle-wrapper {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 10px 0;
+}
+
+.win-radial-gauge {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.win-gauge-bg {
+  fill: none;
+  stroke: #eeeeee;
+  stroke-width: 6;
+}
+
+.win-gauge-progress {
+  fill: none;
+  stroke: var(--win-accent);
+  stroke-width: 6;
+  stroke-dasharray: 276.46; /* 2 * pi * 44 */
+  stroke-dashoffset: 276.46;
+  transition: stroke-dashoffset 1s ease-in-out, stroke var(--win-transition);
+}
+
+.win-gauge-text-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding-top: 45px;
+}
+
+.win-score-number {
+  font-family: var(--win-font);
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--win-text-primary);
+}
+
+#win-score-symbol {
+  font-size: 16px;
+  color: var(--win-text-secondary);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.win-score-label-badge-wrapper {
+  margin-top: 6px;
+}
+
+.win-score-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--win-bg-hover);
+  padding: 4px 12px;
+  border: 1px solid var(--win-border-color);
+}
+
+/* Category Progress Bars */
+.win-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metric-progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--win-text-primary);
+}
+
+.metric-val {
+  font-weight: 700;
+}
+
+.win-progress-track {
+  background-color: #eeeeee;
+  height: 8px;
+  width: 100%;
+  position: relative;
+}
+
+.win-progress-fill {
+  background-color: var(--win-accent);
+  height: 100%;
+  width: 0%;
+  transition: width 1s ease-in-out;
+}
+
+/* Gaps column */
+.dashboard-gaps-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gaps-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gap-priority-block {
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--win-border-color);
+}
+
+.gap-priority-block:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.gap-header {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.win-p-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1px 6px;
+}
+
+.badge-p-critical { background-color: var(--win-danger-light); color: var(--win-danger); border: 1px solid rgba(168, 0, 0, 0.2); }
+.badge-p-important { background-color: var(--win-warning-light); color: var(--win-warning); border: 1px solid rgba(183, 87, 0, 0.2); }
+.badge-p-nicetohave { background-color: var(--win-accent-light); color: var(--win-accent); border: 1px solid rgba(0, 120, 215, 0.2); }
+
+.gap-bullet-list {
+  list-style: none;
+  padding-left: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gap-bullet-list li {
+  font-size: 11px;
+  color: var(--win-text-secondary);
+  position: relative;
+  padding-left: 14px;
+}
+
+.gap-bullet-list li::before {
+  content: "•";
+  color: var(--win-text-muted);
+  position: absolute;
+  left: 0;
+  top: -1px;
+  font-size: 14px;
+}
+
+.empty-bullet-li {
+  color: var(--win-text-muted) !important;
+  font-style: italic;
+}
+.empty-bullet-li::before { display: none; }
+
+.win-summary-paragraph {
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--win-text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   Pane 4: Visual Match Matrix
+   -------------------------------------------------------------------------- */
+
+.matrix-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  flex-grow: 1;
+  height: 100%;
+}
+
+@media (min-width: 800px) {
+  .matrix-layout-grid {
+    grid-template-columns: 320px 1fr;
+  }
+}
+
+.matrix-list-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.column-title-with-desc h3 {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.column-title-with-desc p {
+  font-size: 10px;
+  color: var(--win-text-muted);
+  line-height: 1.3;
+}
+
+.matrix-mappings-list {
+  flex-grow: 1;
+  border: 1px solid var(--win-border-color);
+  background-color: var(--win-bg-sidebar);
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Mapping item list card */
+.win-mapping-card {
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+  padding: 10px;
+  cursor: default;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all var(--win-transition);
+}
+
+.win-mapping-card:hover {
+  background-color: var(--win-accent-light);
+  border-color: var(--win-accent);
+}
+
+.win-mapping-card.active {
+  background-color: var(--win-accent);
+  color: var(--win-text-white) !important;
+  border-color: var(--win-accent);
+}
+
+.mapping-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mapping-ids {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mapping-type {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--win-text-muted);
+}
+
+.win-mapping-card.active .mapping-type {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.mapping-score-pill {
+  font-family: var(--win-font);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background-color: var(--win-bg-sidebar);
+  color: var(--win-text-primary);
+  border: 1px solid var(--win-border-color);
+}
+
+.win-mapping-card.active .mapping-score-pill {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--win-text-white);
+  border-color: transparent;
+}
+
+/* Details Column / Card */
+.matrix-details-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.details-fallback-card {
+  height: 100%;
+  border: 1px dashed var(--win-border-dark);
+  color: var(--win-text-muted);
+  text-align: center;
+  padding: 40px;
+  font-size: 11px;
+  gap: 12px;
+}
+
+.fallback-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--win-text-muted);
+}
+
+.details-inspect-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.details-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--win-border-color);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.details-title {
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--win-accent);
+}
+
+.details-title i {
+  width: 16px;
+  height: 16px;
+}
+
+.badge-similarity {
+  font-family: var(--win-font);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--win-success);
+  background-color: var(--win-success-light);
+  padding: 2px 8px;
+  border: 1px solid rgba(16, 124, 65, 0.2);
+}
+
+.details-card-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inspect-row {
+  display: flex;
+  gap: 16px;
+}
+
+.inspect-half {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspect-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--win-text-secondary);
+}
+
+.inspect-content-box {
+  background-color: var(--win-bg-sidebar);
+  border: 1px solid var(--win-border-color);
+  padding: 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  height: 140px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: var(--win-text-primary);
+}
+
+.inspect-divider {
+  height: 1px;
+  background-color: var(--win-border-color);
+}
+
+.inspect-meta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspect-meta-title {
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--win-text-primary);
+}
+
+.inspect-meta-title i {
+  width: 14px;
+  height: 14px;
+}
+
+.inspect-meta-desc {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--win-text-secondary);
+}
+
+.inspect-meta-block-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.badge-severity-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  margin-left: 6px;
+}
+
+.badge-severity-low { background-color: var(--win-success-light); color: var(--win-success); }
+.badge-severity-medium { background-color: var(--win-warning-light); color: var(--win-warning); }
+.badge-severity-high { background-color: var(--win-danger-light); color: var(--win-danger); }
+
+/* --------------------------------------------------------------------------
+   Pane 5: Resume Statement Debugger
+   -------------------------------------------------------------------------- */
+
+.debugger-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.debugger-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--win-border-color);
+  padding-bottom: 10px;
+}
+
+.debugger-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.debugger-desc {
+  font-size: 11px;
+  color: var(--win-text-secondary);
+}
+
+/* System Grid / Table Style */
+.win-table-wrapper {
+  flex-grow: 1;
+  border: 1px solid var(--win-border-color);
+  overflow-y: auto;
+}
+
+.win-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  text-align: left;
+}
+
+.win-table th {
+  background-color: var(--win-bg-sidebar);
+  color: var(--win-text-primary);
+  font-weight: 600;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--win-border-dark);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  user-select: none;
+}
+
+.win-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--win-border-color);
+  line-height: 1.5;
+  color: var(--win-text-secondary);
+  vertical-align: top;
+}
+
+.win-table tbody tr:hover {
+  background-color: #f7f7f7;
+}
+
+.win-table-empty {
+  text-align: center !important;
+  color: var(--win-text-muted) !important;
+  font-style: italic;
+  padding: 30px !important;
+}
+
+.win-table-suggested {
+  color: var(--win-success) !important;
+  font-weight: 600;
+  background-color: rgba(16, 124, 65, 0.02);
+}
+
+.win-table-current {
+  color: var(--win-text-primary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Scanner Overlay
+   -------------------------------------------------------------------------- */
+
+.win-scanner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.scanner-dialog {
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-dark);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 320px;
+  padding: 20px;
+}
+
+.scanner-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.dialog-icon-spin {
+  width: 18px;
+  height: 18px;
+  color: var(--win-accent);
+}
+
+.animate-spin {
+  animation: winSpin 1s infinite linear;
+}
+
+@keyframes winSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.scanner-dialog-body {
+  font-size: 11px;
+  color: var(--win-text-secondary);
+}
+
+.progress-bar-wrapper {
+  background-color: #eeeeee;
+  height: 4px;
+  width: 100%;
+  margin-top: 14px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  background-color: var(--win-accent);
+  height: 100%;
+  width: 0%;
+  transition: width 0.2s ease;
+}
+
+/* --------------------------------------------------------------------------
+   Print styling
+   -------------------------------------------------------------------------- */
+
+.print-layout-container {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Pane 6: How It Works Section Styling
+   -------------------------------------------------------------------------- */
+.howitworks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 10px 0;
+}
+
+.howitworks-title {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--win-text-primary);
+}
+
+.howitworks-title i {
+  width: 18px;
+  height: 18px;
+}
+
+.howitworks-intro {
+  font-size: 11.5px;
+  color: var(--win-text-secondary);
+  line-height: 1.5;
+}
+
+.workflow-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+@media (min-width: 600px) {
+  .workflow-steps {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.workflow-step-card {
+  background-color: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.step-num-badge {
+  background-color: var(--win-accent);
+  color: var(--win-text-white);
+  font-size: 10px;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.step-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--win-text-primary);
+}
+
+.step-desc {
+  font-size: 11px;
+  color: var(--win-text-secondary);
+  line-height: 1.45;
+}
+
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    padding: 0;
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  .win-window {
+    border: none !important;
+    box-shadow: none !important;
+    height: auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  .win-title-bar,
+  .win-command-bar,
+  .win-config-drawer,
+  .win-sidebar,
+  .win-tab-bar,
+  .win-pane-container,
+  .win-scanner-overlay {
+    display: none !important;
+  }
+
+  .print-layout-container {
+    display: block !important;
+    padding: 20px;
+  }
+
+  .print-logo-banner {
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+    margin-bottom: 24px;
+  }
+
+  .print-logo-banner h2 {
+    font-size: 20px;
+    color: #000;
+  }
+
+  .print-logo-banner p {
+    font-size: 11px;
+    color: #666;
+  }
+
+  /* Specific structure for print injection */
+  .print-section {
+    margin-bottom: 30px;
+    page-break-inside: avoid;
+  }
+
+  .print-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    border-bottom: 1px solid #333;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+
+  .print-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .print-score-box {
+    border: 1px solid #ccc;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .print-score-num {
+    font-size: 32px;
+    font-weight: 700;
+  }
+
+  .print-bullets {
+    margin-top: 8px;
+    padding-left: 16px;
+  }
+
+  .print-bullets li {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+
+  .print-table th, .print-table td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .print-table th {
+    background-color: #f0f0f0;
+  }
+}

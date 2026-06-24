@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResuMatch ATS — Resume Match Engine & Debugger</title>
+  <meta name="description" content="A transparent Resume vs Job Description chunking and matching debugger. Inspect chunks, edit mappings, and optimize alignment in real-time.">
+  
+  <!-- Preconnect and Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- PDF.js Client-Side Parser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  
+  <!-- Mammoth.js Client-Side DOCX Parser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Windows 10 App Frame -->
+  <div class="win-window">
+    
+    <!-- Title Bar -->
+    <header class="win-title-bar">
+      <div class="win-title-icon-wrapper">
+        <i data-lucide="cpu" class="win-app-icon"></i>
+        <span class="win-title-text">ResuMatch ATS - Resume Debugger & Match Engine</span>
+      </div>
+      <!-- Mock Window Controls -->
+      <div class="win-window-controls">
+        <button class="win-control-btn" aria-label="Minimize"><span class="win-control-icon win-min"></span></button>
+        <button class="win-control-btn" aria-label="Maximize"><span class="win-control-icon win-max"></span></button>
+        <button class="win-control-btn win-btn-close" aria-label="Close"><span class="win-control-icon win-close"></span></button>
+      </div>
+    </header>
+
+    <!-- App Command Bar -->
+    <div class="win-command-bar">
+      <button id="btn-show-api-settings" class="win-cmd-btn">
+        <i data-lucide="settings"></i>
+        <span>API Settings</span>
+      </button>
+      <div class="win-cmd-separator"></div>
+      <div class="win-cmd-status">
+        <span class="status-label">LLM Provider:</span>
+        <span id="active-provider-badge" class="badge badge-demo">Demo Mode</span>
+      </div>
+    </div>
+
+    <!-- API Configuration Drawer (Hidden by Default) -->
+    <div id="api-config-drawer" class="win-config-drawer hidden">
+      <div class="drawer-header">
+        <h3><i data-lucide="key-round"></i> LLM Credentials Settings</h3>
+        <button id="btn-close-api" class="btn-close-drawer" title="Close"><i data-lucide="x"></i></button>
+      </div>
+      <div class="drawer-body">
+        <div class="drawer-fields-grid">
+          <div class="form-group">
+            <label for="api-provider-select" class="form-label">API Provider</label>
+            <select id="api-provider-select" class="win-select">
+              <option value="gemini">Google Gemini</option>
+              <option value="openai">OpenAI</option>
+              <option value="claude">Anthropic Claude</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="kimi">Kimi (Moonshot)</option>
+              <option value="custom">Custom (Ollama / Local / DeepSeek)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="api-key-input" class="form-label">API Key / Token</label>
+            <div class="input-password-wrapper">
+              <input type="password" id="api-key-input" class="win-input" placeholder="Enter API Key...">
+              <button id="btn-toggle-password" class="btn-toggle-pwd" type="button" title="Show/Hide">
+                <i data-lucide="eye" id="eye-icon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="api-base-url-input" class="form-label">API Base URL</label>
+            <input type="text" id="api-base-url-input" class="win-input" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="api-model-input" class="form-label">Model Name</label>
+            <input type="text" id="api-model-input" class="win-input">
+          </div>
+        </div>
+
+        <!-- CORS warning -->
+        <div id="cors-notice" class="cors-notice hidden">
+          <i data-lucide="alert-triangle" class="cors-icon"></i>
+          <span class="cors-text">Direct browser calls to OpenAI/Anthropic keys will fail due to CORS. Use <strong>OpenRouter</strong> or local custom endpoints.</span>
+        </div>
+
+        <div class="drawer-actions">
+          <button id="btn-save-api" class="win-btn win-btn-blue">Save Settings</button>
+          <button id="btn-clear-api" class="win-btn win-btn-gray">Reset Defaults</button>
+        </div>
+        <p id="api-feedback-msg" class="api-feedback hidden"></p>
+      </div>
+    </div>
+
+    <!-- Application Workspace -->
+    <div class="win-workspace">
+      
+      <!-- Left Sidebar: Controls & Strategies -->
+      <aside class="win-sidebar">
+        
+        <!-- Panel 1: Chunking Engine Settings -->
+        <div class="sidebar-section">
+          <h2 class="sidebar-section-title">Chunking Engine</h2>
+          
+          <div class="sidebar-control-group">
+            <label for="chunk-strategy-select" class="sidebar-label">Chunking Strategy</label>
+            <select id="chunk-strategy-select" class="win-select full-width">
+              <option value="section" selected>Section-Based Chunking (Default)</option>
+              <option value="fixed">Fixed Character Chunking</option>
+              <option value="paragraph">Paragraph Chunking</option>
+              <option value="sentence">Sentence Chunking</option>
+              <option value="token">Token Chunking</option>
+              <option value="semantic">Semantic Chunking (AI Boundary)</option>
+              <option value="hybrid">Hybrid (Section + Para)</option>
+            </select>
+          </div>
+
+          <!-- Slider: Chunk Size (Shows only for Fixed, Token, Hybrid) -->
+          <div id="control-chunk-size" class="sidebar-control-group">
+            <div class="slider-header">
+              <span class="sidebar-label">Chunk Size</span>
+              <span id="chunk-size-value" class="slider-value">500 chars</span>
+            </div>
+            <input type="range" id="chunk-size-slider" class="win-slider" min="100" max="1500" step="50" value="500">
+          </div>
+
+          <!-- Slider: Overlap (Shows only for Fixed, Token, Hybrid) -->
+          <div id="control-chunk-overlap" class="sidebar-control-group">
+            <div class="slider-header">
+              <span class="sidebar-label">Chunk Overlap</span>
+              <span id="chunk-overlap-value" class="slider-value">20%</span>
+            </div>
+            <input type="range" id="chunk-overlap-slider" class="win-slider" min="0" max="50" step="5" value="20">
+          </div>
+
+          <!-- Slider: Semantic Threshold (Shows only for Semantic) -->
+          <div id="control-semantic-threshold" class="sidebar-control-group hidden">
+            <div class="slider-header">
+              <span class="sidebar-label">Semantic Threshold</span>
+              <span id="semantic-threshold-value" class="slider-value">0.65</span>
+            </div>
+            <input type="range" id="semantic-threshold-slider" class="win-slider" min="0.1" max="0.9" step="0.05" value="0.65">
+          </div>
+
+          <!-- Checkboxes and advanced configs -->
+          <div class="sidebar-control-group advanced-checkboxes">
+            <label class="win-checkbox-label">
+              <input type="checkbox" id="chk-merge-small" checked>
+              <span>Merge small chunks</span>
+            </label>
+            <label class="win-checkbox-label">
+              <input type="checkbox" id="chk-preserve-headers" checked>
+              <span>Preserve section headers</span>
+            </label>
+          </div>
+
+          <div class="sidebar-control-group">
+            <label for="input-min-chunk" class="sidebar-label">Min Chunk Length</label>
+            <input type="number" id="input-min-chunk" class="win-input-small" min="10" max="200" value="25">
+          </div>
+        </div>
+
+        <!-- Panel 2: Match Engine Settings -->
+        <div class="sidebar-section">
+          <h2 class="sidebar-section-title">Match Engine</h2>
+          <div class="sidebar-control-group">
+            <label for="match-method-select" class="sidebar-label">Similarity Method</label>
+            <select id="match-method-select" class="win-select full-width">
+              <option value="tfidf">Keyword Overlap (TF-IDF)</option>
+              <option value="cosine">Local Cosine Similarity</option>
+              <option value="ai-judge" selected>AI Judge (LLM Evaluator)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sidebar-section note-section">
+          <p class="sidebar-note">Adjust settings to recalculate indices in the Playground in real time.</p>
+        </div>
+
+      </aside>
+
+      <!-- Right Main Workspace Content Area -->
+      <main class="win-main-panel">
+        
+        <!-- Workspace Tabs -->
+        <nav class="win-tab-bar" role="tablist">
+          <button id="tab-btn-inputs" class="win-tab-btn active" role="tab" aria-selected="true" aria-controls="pane-inputs">
+            <i data-lucide="file-text"></i>
+            <span>1. Input Documents</span>
+          </button>
+          <button id="tab-btn-playground" class="win-tab-btn" role="tab" aria-selected="false" aria-controls="pane-playground">
+            <i data-lucide="layout-grid"></i>
+            <span>2. Chunk Playground</span>
+          </button>
+          <button id="tab-btn-dashboard" class="win-tab-btn" role="tab" aria-selected="false" aria-controls="pane-dashboard">
+            <i data-lucide="gauge"></i>
+            <span>3. Match Dashboard</span>
+          </button>
+          <button id="tab-btn-matrix" class="win-tab-btn" role="tab" aria-selected="false" aria-controls="pane-matrix">
+            <i data-lucide="git-merge"></i>
+            <span>4. Visual Match Matrix</span>
+          </button>
+          <button id="tab-btn-debugger" class="win-tab-btn" role="tab" aria-selected="false" aria-controls="pane-debugger">
+            <i data-lucide="wrench"></i>
+            <span>5. Resume Debugger</span>
+          </button>
+          <button id="tab-btn-howitworks" class="win-tab-btn" role="tab" aria-selected="false" aria-controls="pane-howitworks">
+            <i data-lucide="help-circle"></i>
+            <span>6. How It Works</span>
+          </button>
+        </nav>
+
+        <!-- Tab Panes Container -->
+        <div class="win-pane-container">
+          
+          <!-- Pane 1: Input Documents -->
+          <div id="pane-inputs" class="win-tab-pane" role="tabpanel">
+            <div class="inputs-grid">
+              
+              <!-- Job Description Column -->
+              <div class="input-panel-column">
+                <div class="panel-column-header">
+                  <span class="panel-header-title"><i data-lucide="briefcase" class="header-icon"></i> Job Description</span>
+                  <select id="sample-jd-select" class="win-select">
+                    <option value="">-- Load Sample Role --</option>
+                    <option value="frontend-eng">Senior Frontend Developer (React/Vite)</option>
+                    <option value="data-scientist">Lead Data Scientist (AI/ML)</option>
+                    <option value="marketing-mgr">Product Marketing Director</option>
+                  </select>
+                </div>
+                <textarea id="jd-text-input" class="win-textarea" placeholder="Paste the job description details here..."></textarea>
+              </div>
+
+              <!-- Resume Column -->
+              <div class="input-panel-column">
+                <div class="panel-column-header">
+                  <span class="panel-header-title"><i data-lucide="file-user" class="header-icon"></i> Resume Upload</span>
+                  <select id="sample-resume-select" class="win-select">
+                    <option value="">-- Load Sample Candidate --</option>
+                    <option value="frontend-eng-match">Alex Rivera (Senior Frontend — Strong Match)</option>
+                    <option value="data-scientist-match">Dr. Elena Rostova (Data Scientist — Excellent Match)</option>
+                    <option value="marketing-mgr-match">Taylor Vance (Marketing Executive — Partial Match)</option>
+                  </select>
+                </div>
+
+                <!-- Dropzone -->
+                <div id="drop-zone" class="win-drop-zone">
+                  <input type="file" id="resume-file-input" class="hidden" accept=".pdf,.docx,.txt">
+                  <i data-lucide="upload-cloud" class="win-drop-icon"></i>
+                  <span class="drop-label">Drag & drop resume files here, or <span class="drop-underline">browse files</span></span>
+                  <span class="drop-sublabel">PDF, DOCX, or TXT formats</span>
+                  <div id="file-status-indicator" class="win-file-status hidden">
+                    <i data-lucide="file-check" class="success-icon"></i>
+                    <span id="file-status-text" class="file-name-span">resume.pdf</span>
+                    <button id="btn-remove-file" class="btn-win-circle-danger" title="Remove"><i data-lucide="x"></i></button>
+                  </div>
+                </div>
+
+                <textarea id="resume-text-input" class="win-textarea" placeholder="Or paste the raw text content of the resume here..."></textarea>
+              </div>
+
+            </div>
+
+            <!-- Run Matching Button Bar -->
+            <div class="inputs-action-bar">
+              <button id="btn-compare" class="win-btn win-btn-blue win-btn-large" disabled>
+                <i data-lucide="sparkles"></i>
+                <span>Evaluate Fit & Debug Resume</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pane 2: Chunk Playground & Explorer -->
+          <div id="pane-playground" class="win-tab-pane hidden" role="tabpanel">
+            
+            <!-- Statistics Bar -->
+            <div class="playground-stats-bar">
+              <div class="stat-card">
+                <span class="stat-num" id="stat-resume-chunks">0</span>
+                <span class="stat-label">Resume Chunks</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num" id="stat-jd-chunks">0</span>
+                <span class="stat-label">JD Chunks</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num" id="stat-avg-size">0</span>
+                <span class="stat-label">Average Size</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num" id="stat-coverage">0%</span>
+                <span class="stat-label">Text Coverage</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num" id="stat-overlap-rate">0%</span>
+                <span class="stat-label">Overlap Rate</span>
+              </div>
+            </div>
+
+            <!-- Playground Work Area (Side-by-side) -->
+            <div class="playground-split-grid">
+              
+              <!-- Left Column: Resume Chunks -->
+              <div class="chunk-explorer-column">
+                <div class="explorer-column-header">
+                  <h3>Resume Chunks</h3>
+                  <button id="btn-add-resume-chunk" class="win-cmd-btn btn-sm-win"><i data-lucide="plus"></i> Add Chunk</button>
+                </div>
+                <div id="resume-chunks-list" class="explorer-chunks-list">
+                  <div class="win-no-data-msg">No chunks generated. Set inputs and run evaluation.</div>
+                </div>
+              </div>
+
+              <!-- Right Column: JD Chunks -->
+              <div class="chunk-explorer-column">
+                <div class="explorer-column-header">
+                  <h3>Job Description Chunks</h3>
+                  <button id="btn-add-jd-chunk" class="win-cmd-btn btn-sm-win"><i data-lucide="plus"></i> Add Chunk</button>
+                </div>
+                <div id="jd-chunks-list" class="explorer-chunks-list">
+                  <div class="win-no-data-msg">No chunks generated. Set inputs and run evaluation.</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Pane 3: Match Dashboard -->
+          <div id="pane-dashboard" class="win-tab-pane hidden" role="tabpanel">
+            
+            <div id="dashboard-stale-notice" class="dashboard-stale-notice hidden">
+              <i data-lucide="info" class="stale-icon"></i>
+              <span class="stale-text">Chunking configurations have changed. Displaying a local TF-IDF/Cosine preview. Click <strong>Evaluate Fit & Debug Resume</strong> to refresh AI metrics.</span>
+            </div>
+
+            <div class="dashboard-grid">
+              
+              <!-- Left Column: Scores -->
+              <div class="dashboard-scores-column">
+                
+                <div class="win-flat-card score-radial-card">
+                  <h3 class="win-card-title">Overall Score</h3>
+                  <div class="win-score-circle-wrapper">
+                    <svg class="win-radial-gauge" viewBox="0 0 100 100">
+                      <circle class="win-gauge-bg" cx="50" cy="50" r="44"></circle>
+                      <circle id="win-gauge-progress" class="win-gauge-progress" cx="50" cy="50" r="44"></circle>
+                    </svg>
+                    <div class="win-gauge-text-wrapper">
+                      <span id="win-score-number" class="win-score-number">0</span>
+                      <span id="win-score-symbol">%</span>
+                    </div>
+                  </div>
+                  <div class="win-score-label-badge-wrapper">
+                    <span id="win-score-label" class="win-score-label">No Run</span>
+                  </div>
+                </div>
+
+                <!-- Weighted Breakdowns -->
+                <div class="win-flat-card metrics-breakdown-card">
+                  <h3 class="win-card-title">Category Match Percentages</h3>
+                  <div class="win-metrics-list">
+                    
+                    <div class="metric-progress-item">
+                      <div class="metric-header">
+                        <span>Skills Match</span>
+                        <span id="val-skills-match" class="metric-val">0%</span>
+                      </div>
+                      <div class="win-progress-track">
+                        <div id="bar-skills-match" class="win-progress-fill"></div>
+                      </div>
+                    </div>
+
+                    <div class="metric-progress-item">
+                      <div class="metric-header">
+                        <span>Experience Match</span>
+                        <span id="val-experience-match" class="metric-val">0%</span>
+                      </div>
+                      <div class="win-progress-track">
+                        <div id="bar-experience-match" class="win-progress-fill"></div>
+                      </div>
+                    </div>
+
+                    <div class="metric-progress-item">
+                      <div class="metric-header">
+                        <span>Tools & Tech Match</span>
+                        <span id="val-tools-match" class="metric-val">0%</span>
+                      </div>
+                      <div class="win-progress-track">
+                        <div id="bar-tools-match" class="win-progress-fill"></div>
+                      </div>
+                    </div>
+
+                    <div class="metric-progress-item">
+                      <div class="metric-header">
+                        <span>Leadership Match</span>
+                        <span id="val-leadership-match" class="metric-val">0%</span>
+                      </div>
+                      <div class="win-progress-track">
+                        <div id="bar-leadership-match" class="win-progress-fill"></div>
+                      </div>
+                    </div>
+
+                    <div class="metric-progress-item">
+                      <div class="metric-header">
+                        <span>Education Match</span>
+                        <span id="val-education-match" class="metric-val">0%</span>
+                      </div>
+                      <div class="win-progress-track">
+                        <div id="bar-education-match" class="win-progress-fill"></div>
+                      </div>
+                    </div>
+
+                    <div class="metric-progress-item">
+                      <div class="metric-header">
+                        <span>Domain Alignment</span>
+                        <span id="val-domain-match" class="metric-val">0%</span>
+                      </div>
+                      <div class="win-progress-track">
+                        <div id="bar-domain-match" class="win-progress-fill"></div>
+                      </div>
+                    </div>
+
+                    <div class="metric-progress-item">
+                      <div class="metric-header">
+                        <span>Keyword Density</span>
+                        <span id="val-keyword-match" class="metric-val">0%</span>
+                      </div>
+                      <div class="win-progress-track">
+                        <div id="bar-keyword-match" class="win-progress-fill"></div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Right Column: Gaps & Strengths -->
+              <div class="dashboard-gaps-column">
+                
+                <!-- Missing Skills priorities -->
+                <div class="win-flat-card gaps-skills-card">
+                  <h3 class="win-card-title"><i data-lucide="alert-circle" class="win-card-title-icon text-danger"></i> Missing Skills & Gaps</h3>
+                  <div class="gaps-wrapper">
+                    
+                    <div class="gap-priority-block gap-critical">
+                      <h4 class="gap-header"><span class="win-p-badge badge-p-critical">Critical</span> Necessary Core Gaps</h4>
+                      <ul id="list-gaps-critical" class="gap-bullet-list">
+                        <li class="empty-bullet-li">No critical gaps identified yet.</li>
+                      </ul>
+                    </div>
+
+                    <div class="gap-priority-block gap-important">
+                      <h4 class="gap-header"><span class="win-p-badge badge-p-important">Important</span> Secondary Core Gaps</h4>
+                      <ul id="list-gaps-important" class="gap-bullet-list">
+                        <li class="empty-bullet-li">No important gaps identified yet.</li>
+                      </ul>
+                    </div>
+
+                    <div class="gap-priority-block gap-nicetohave">
+                      <h4 class="gap-header"><span class="win-p-badge badge-p-nicetohave">Nice-to-Have</span> Preferential Gaps</h4>
+                      <ul id="list-gaps-nice" class="gap-bullet-list">
+                        <li class="empty-bullet-li">No nice-to-have gaps identified.</li>
+                      </ul>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Executive Summary -->
+                <div class="win-flat-card summary-card">
+                  <h3 class="win-card-title"><i data-lucide="text-quote" class="win-card-title-icon text-blue"></i> Match Explanatory Summary</h3>
+                  <p id="dashboard-summary-text" class="win-summary-paragraph">No evaluation has been run. Enter a resume and job description on the first tab and click compare to generate matching metrics.</p>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Pane 4: Visual Match Matrix -->
+          <div id="pane-matrix" class="win-tab-pane hidden" role="tabpanel">
+            
+            <div class="matrix-layout-grid">
+              
+              <!-- Left Grid: List of Maps -->
+              <div class="matrix-list-column">
+                <div class="column-title-with-desc">
+                  <h3>Chunk Alignment Maps</h3>
+                  <p>Displaying mappings between Resume and JD chunks based on Jaccard/TF-IDF Cosine Similarity.</p>
+                </div>
+                
+                <div id="matrix-mappings-list" class="matrix-mappings-list">
+                  <div class="win-no-data-msg">No matrix records. Run evaluation to compute chunk maps.</div>
+                </div>
+              </div>
+
+              <!-- Right Panel: Alignment Explanation Card -->
+              <div class="matrix-details-column">
+                <div id="matrix-details-card" class="win-flat-card details-inspect-card hidden">
+                  <div class="details-card-header">
+                    <h3 class="details-title"><i data-lucide="search-code"></i> Chunk Match Inspection</h3>
+                    <span id="inspect-similarity-badge" class="badge-similarity">Similarity: 0%</span>
+                  </div>
+                  
+                  <div class="details-card-body">
+                    <div class="inspect-row">
+                      <div class="inspect-half">
+                        <span class="inspect-label">Resume Source Chunk</span>
+                        <div id="inspect-resume-content" class="inspect-content-box"></div>
+                      </div>
+                      <div class="inspect-half">
+                        <span class="inspect-label">Job Description Target Chunk</span>
+                        <div id="inspect-jd-content" class="inspect-content-box"></div>
+                      </div>
+                    </div>
+
+                    <div class="inspect-divider"></div>
+
+                    <div class="inspect-meta-block">
+                      <span class="inspect-meta-title"><i data-lucide="bookmark-check" class="text-blue"></i> Match Reasoning</span>
+                      <p id="inspect-match-reason" class="inspect-meta-desc">...</p>
+                    </div>
+
+                    <div class="inspect-meta-block">
+                      <span class="inspect-meta-title"><i data-lucide="alert-triangle" class="text-warning"></i> Missing Skills / Keywords</span>
+                      <p id="inspect-missing-items" class="inspect-meta-desc">...</p>
+                    </div>
+
+                    <div class="inspect-meta-block-row">
+                      <div>
+                        <span class="inspect-meta-title">Gap Severity</span>
+                        <span id="inspect-severity-label" class="badge-severity-label badge-severity-low">Low</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="matrix-details-fallback" class="win-flat-card details-fallback-card flex-center">
+                  <i data-lucide="split" class="fallback-icon"></i>
+                  <span>Select a chunk mapping card from the list on the left to inspect vector similarity, reasons, and missing keyword attributes.</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Pane 5: Resume Debugger -->
+          <div id="pane-debugger" class="win-tab-pane hidden" role="tabpanel">
+            
+            <div class="debugger-container">
+              <div class="debugger-header-bar">
+                <div>
+                  <h3 class="debugger-title">Resume Statement Debugger</h3>
+                  <p class="debugger-desc">Refactor low-impact resume statements to align with specific job description requirements.</p>
+                </div>
+                <button id="btn-print-debugger" class="win-btn win-btn-blue">
+                  <i data-lucide="printer"></i>
+                  <span>Print Audit Report</span>
+                </button>
+              </div>
+
+              <!-- Refactoring Table -->
+              <div class="win-table-wrapper">
+                <table class="win-table" id="debugger-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 30%">Current Resume Statement</th>
+                      <th style="width: 35%">Suggested Debug Statement</th>
+                      <th style="width: 35%">Impact Explanation</th>
+                    </tr>
+                  </thead>
+                  <tbody id="debugger-table-body">
+                    <tr>
+                      <td colspan="3" class="win-table-empty">No debugger recommendations. Run compare evaluations to construct recommendations.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Pane 6: How It Works -->
+          <div id="pane-howitworks" class="win-tab-pane hidden" role="tabpanel">
+            <div class="howitworks-container">
+              <h3 class="howitworks-title"><i data-lucide="help-circle" class="text-blue"></i> Match Engine Technical Workflow</h3>
+              <p class="howitworks-intro">ResuMatch ATS operates as an interactive debugger, breaking both documents into vector chunks and comparing alignments locally before running AI evaluations.</p>
+              
+              <div class="workflow-steps">
+                
+                <div class="workflow-step-card">
+                  <div class="step-num-badge">1</div>
+                  <h4 class="step-title">Text Extraction</h4>
+                  <p class="step-desc">The file uploader extracts plain text client-side using PDF.js and Mammoth.js. Text formatting, spacing, and page elements are parsed into clean document buffers entirely in your browser.</p>
+                </div>
+
+                <div class="workflow-step-card">
+                  <div class="step-num-badge">2</div>
+                  <h4 class="step-title">Document Chunking</h4>
+                  <p class="step-desc">The text is split using your chosen strategy. Section-based chunking identifies logical divisions (e.g. Experience, Skills) using rules. Sliders let you customize fixed character boundaries and overlap margins to control context retention.</p>
+                </div>
+
+                <div class="workflow-step-card">
+                  <div class="step-num-badge">3</div>
+                  <h4 class="step-title">Local Similarity Matching</h4>
+                  <p class="step-desc">A local TF-IDF (Term Frequency-Inverse Document Frequency) index is built from vocabulary. The engine computes Jaccard overlaps and Cosine Vector Similarity to match Resume chunks to JD chunks instantly as you edit.</p>
+                </div>
+
+                <div class="workflow-step-card">
+                  <div class="step-num-badge">4</div>
+                  <h4 class="step-title">AI Judge & Suggestion Engine</h4>
+                  <p class="step-desc">When you click evaluate, the matched chunk indexes are reviewed by the selected LLM provider. The AI judge acts as an expert recruiter to generate category scores, prioritized gaps, and rewrite suggestions.</p>
+                </div>
+
+              </div>
+
+              <!-- Real-time note callout -->
+              <div class="win-flat-card info-callout-card" style="margin-top: 20px; border-left: 4px solid var(--win-accent); background-color: var(--win-accent-light); padding: 14px;">
+                <span class="inspect-meta-title" style="color: var(--win-accent); font-weight: 700; display: flex; align-items: center; gap: 6px; font-size: 11px;"><i data-lucide="info"></i> Interactive Score Recalculation Note</span>
+                <p style="font-size: 11px; line-height: 1.5; color: var(--win-text-secondary); margin-top: 6px;">
+                  If <strong>Local Cosine Similarity</strong> or <strong>Keyword Overlap (TF-IDF)</strong> is selected as the Similarity Method, all matches, scores, and alignment maps update **instantly** as you change strategies, drag sliders, or edit raw text in the Chunk Playground. If <strong>AI Judge</strong> is selected, a new evaluation must be run to update the LLM metrics after changes.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+    </div>
+
+    <!-- Scanner overlay (Hidden by Default) -->
+    <div id="scanner-section" class="win-scanner-overlay hidden">
+      <div class="scanner-dialog glass-card">
+        <div class="scanner-dialog-header">
+          <i data-lucide="cpu" class="dialog-icon-spin animate-spin"></i>
+          <span id="scanner-title">Analysing Documents...</span>
+        </div>
+        <div class="scanner-dialog-body">
+          <p id="scanner-desc">Running client-side tokenization, Jaccard similarities, and building chunk indices.</p>
+          <div class="progress-bar-wrapper">
+            <div id="scan-progress-bar" class="progress-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Print Header (Hidden on screen, shown in print) -->
+    <div class="print-layout-container">
+      <div class="print-logo-banner">
+        <h2>ResuMatch ATS - Transparent Match Report</h2>
+        <p id="print-timestamp">Generated on: </p>
+      </div>
+      <div id="print-main-content"></div>
+    </div>
+
+  </div>
+
+  <!-- Core Javascript File -->
+  <script src="app.js"></script>
+</body>
+</html>
