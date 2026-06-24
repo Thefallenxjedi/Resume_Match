@@ -387,6 +387,8 @@ document.addEventListener("DOMContentLoaded", () => {
     jdText: "",
     resumeText: "",
     selectedFile: null,
+    jdSelectedFile: null,
+    customPrompt: localStorage.getItem("ats_custom_prompt") || "",
     activeTab: "inputs",
     resumeChunks: [], // array of { id, text, section, charCount, tokenCount }
     jdChunks: [],     // array of { id, text, section, charCount, tokenCount }
@@ -434,6 +436,43 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  const PROVIDER_MODELS = {
+    gemini: [
+      { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash (Recommended)" },
+      { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+      { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
+      { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
+      { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" }
+    ],
+    openai: [
+      { value: "gpt-4o", label: "GPT-4o (Recommended)" },
+      { value: "gpt-4o-mini", label: "GPT-4o Mini" },
+      { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
+      { value: "o3-mini", label: "o3-mini" }
+    ],
+    claude: [
+      { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet (Recommended)" },
+      { value: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
+      { value: "claude-3-opus-20240229", label: "Claude 3 Opus" }
+    ],
+    openrouter: [
+      { value: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash (Recommended)" },
+      { value: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+      { value: "openai/gpt-4o", label: "GPT-4o" },
+      { value: "openai/gpt-4o-mini", label: "GPT-4o Mini" },
+      { value: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet" },
+      { value: "anthropic/claude-3.5-haiku", label: "Claude 3.5 Haiku" },
+      { value: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B" },
+      { value: "deepseek/deepseek-chat", label: "DeepSeek Chat" }
+    ],
+    kimi: [
+      { value: "moonshot-v1-8k", label: "Moonshot v1 8K (Recommended)" },
+      { value: "moonshot-v1-32k", label: "Moonshot v1 32K" },
+      { value: "moonshot-v1-128k", label: "Moonshot v1 128K" }
+    ],
+    custom: []
+  };
+
   // DOM Elements - API Config
   const btnShowApiSettings = document.getElementById("btn-show-api-settings");
   const apiConfigDrawer = document.getElementById("api-config-drawer");
@@ -442,7 +481,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const apiProviderSelect = document.getElementById("api-provider-select");
   const apiKeyInput = document.getElementById("api-key-input");
   const apiBaseUrlInput = document.getElementById("api-base-url-input");
-  const apiModelInput = document.getElementById("api-model-input");
+  const apiModelSelect = document.getElementById("api-model-select");
+  const apiModelCustomInput = document.getElementById("api-model-custom");
   const corsNotice = document.getElementById("cors-notice");
   const btnTogglePassword = document.getElementById("btn-toggle-password");
   const eyeIcon = document.getElementById("eye-icon");
@@ -452,6 +492,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // DOM Elements - Hero & Banners
   const btnHeroHowitworks = document.getElementById("btn-hero-howitworks");
+  const btnSidebarToggle = document.getElementById("btn-sidebar-toggle");
+  const winSidebar = document.getElementById("win-sidebar");
+  const sidebarBackdrop = document.getElementById("sidebar-backdrop");
   const apiKeyBanner = document.getElementById("api-key-banner");
   const btnDismissBanner = document.getElementById("btn-dismiss-banner");
   const btnBannerApi = document.getElementById("btn-banner-api");
@@ -467,6 +510,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // DOM Elements - Sidebar Controls
   const chunkStrategySelect = document.getElementById("chunk-strategy-select");
+  const chunkStrategyRecommendation = document.getElementById("chunk-strategy-recommendation");
+  const customPromptInput = document.getElementById("custom-prompt-input");
   const controlChunkSize = document.getElementById("control-chunk-size");
   const chunkSizeSlider = document.getElementById("chunk-size-slider");
   const chunkSizeValue = document.getElementById("chunk-size-value");
@@ -484,6 +529,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // DOM Elements - Inputs
   const sampleJdSelect = document.getElementById("sample-jd-select");
   const jdTextInput = document.getElementById("jd-text-input");
+  const jdDropZone = document.getElementById("jd-drop-zone");
+  const jdFileInput = document.getElementById("jd-file-input");
+  const jdFileStatusIndicator = document.getElementById("jd-file-status-indicator");
+  const jdFileStatusText = document.getElementById("jd-file-status-text");
+  const btnRemoveJdFile = document.getElementById("btn-remove-jd-file");
   const sampleResumeSelect = document.getElementById("sample-resume-select");
   const resumeTextInput = document.getElementById("resume-text-input");
   const dropZone = document.getElementById("drop-zone");
@@ -550,16 +600,201 @@ document.addEventListener("DOMContentLoaded", () => {
   const scannerDesc = document.getElementById("scanner-desc");
   const scanProgressBar = document.getElementById("scan-progress-bar");
 
+  const tooltipPortal = document.getElementById("tooltip-portal");
 
-  // ==========================================================================
-  // Initialization & Sidebar controls
-  // ==========================================================================
+
+  function getStrategyRecommendation(strat) {
+    const recommendations = {
+      section: {
+        rating: "Best",
+        text: "Resumes have clear headers (Experience, Skills, Education) — mirrors how ATS parsers work. <strong>Best starting point: Section-Based with 20% overlap.</strong>"
+      },
+      hybrid: {
+        rating: "Good",
+        text: "Combines section headers with paragraph splits — useful when experience blocks are long or poorly labeled."
+      },
+      paragraph: {
+        rating: "OK",
+        text: "Works when the resume has no clear section labels. May split related bullets across chunks."
+      },
+      fixed: {
+        rating: "Advanced",
+        text: "Fixed character chunks — fine-tune chunk size for experimentation. Less aligned with resume structure."
+      },
+      token: {
+        rating: "Advanced",
+        text: "Token-based sizing for LLM context limits. Good for testing how models handle chunk boundaries."
+      },
+      sentence: {
+        rating: "Niche",
+        text: "Too granular for full resume matching — creates many small chunks and weaker section context."
+      },
+      semantic: {
+        rating: "Experimental",
+        text: "Boundary detection without real embeddings. Useful for exploring split points, not production matching."
+      }
+    };
+    const rec = recommendations[strat] || recommendations.section;
+    return `<strong>${rec.rating} for resumes:</strong> ${rec.text}`;
+  }
+
+  function updateChunkStrategyRecommendation(strat) {
+    if (!chunkStrategyRecommendation) return;
+    chunkStrategyRecommendation.innerHTML = getStrategyRecommendation(strat || state.strategy);
+  }
+
+  updateChunkStrategyRecommendation(state.strategy);
+
+  if (customPromptInput) {
+    customPromptInput.value = state.customPrompt;
+    customPromptInput.addEventListener("blur", () => {
+      state.customPrompt = customPromptInput.value.trim();
+      localStorage.setItem("ats_custom_prompt", state.customPrompt);
+    });
+  }
+
+  function buildSystemPrompt(base) {
+    return state.customPrompt
+      ? `${base}\n\nAdditional user instructions:\n${state.customPrompt}`
+      : base;
+  }
+
+  function setupMobileSidebar() {
+    if (!btnSidebarToggle || !winSidebar) return;
+
+    function closeSidebar() {
+      winSidebar.classList.remove("sidebar-open");
+      if (sidebarBackdrop) sidebarBackdrop.classList.add("hidden");
+    }
+
+    function openSidebar() {
+      winSidebar.classList.add("sidebar-open");
+      if (sidebarBackdrop) sidebarBackdrop.classList.remove("hidden");
+    }
+
+    btnSidebarToggle.addEventListener("click", () => {
+      if (winSidebar.classList.contains("sidebar-open")) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    });
+
+    if (sidebarBackdrop) {
+      sidebarBackdrop.addEventListener("click", closeSidebar);
+    }
+
+    window.addEventListener("resize", () => {
+      if (window.innerWidth >= 768) closeSidebar();
+    });
+  }
+  setupMobileSidebar();
+
+  function setupTooltipPortal() {
+    if (!tooltipPortal) return;
+
+    let activeTrigger = null;
+
+    function hideTooltip() {
+      tooltipPortal.classList.add("hidden");
+      tooltipPortal.textContent = "";
+      tooltipPortal.classList.remove("tooltip-below");
+      activeTrigger = null;
+    }
+
+    function positionTooltip(trigger) {
+      const text = trigger.getAttribute("data-tooltip");
+      if (!text) return hideTooltip();
+
+      tooltipPortal.textContent = text;
+      tooltipPortal.classList.remove("hidden");
+
+      const rect = trigger.getBoundingClientRect();
+      const portalRect = tooltipPortal.getBoundingClientRect();
+      const margin = 8;
+      let top = rect.top - portalRect.height - margin;
+      let left = rect.left + rect.width / 2 - portalRect.width / 2;
+
+      if (top < margin) {
+        top = rect.bottom + margin;
+        tooltipPortal.classList.add("tooltip-below");
+      } else {
+        tooltipPortal.classList.remove("tooltip-below");
+      }
+
+      left = Math.max(margin, Math.min(left, window.innerWidth - portalRect.width - margin));
+      tooltipPortal.style.top = `${top}px`;
+      tooltipPortal.style.left = `${left}px`;
+    }
+
+    function showTooltip(trigger) {
+      activeTrigger = trigger;
+      positionTooltip(trigger);
+    }
+
+    document.querySelectorAll(".tooltip-trigger").forEach((trigger) => {
+      trigger.addEventListener("mouseenter", () => showTooltip(trigger));
+      trigger.addEventListener("focus", () => showTooltip(trigger));
+      trigger.addEventListener("mouseleave", hideTooltip);
+      trigger.addEventListener("blur", hideTooltip);
+    });
+
+    window.addEventListener("scroll", () => {
+      if (activeTrigger) positionTooltip(activeTrigger);
+    }, true);
+
+    window.addEventListener("resize", () => {
+      if (activeTrigger) positionTooltip(activeTrigger);
+    });
+  }
+  setupTooltipPortal();
+
+  function getSelectedModel() {
+    if (apiProviderSelect.value === "custom") {
+      return apiModelCustomInput.value.trim();
+    }
+    return apiModelSelect.value;
+  }
+
+  function populateModelField(provider, currentModel) {
+    const models = PROVIDER_MODELS[provider] || [];
+    const defaultModel = PROVIDER_DEFAULTS[provider]?.model || "";
+    const modelToUse = currentModel || defaultModel;
+
+    if (provider === "custom") {
+      apiModelSelect.classList.add("hidden");
+      apiModelCustomInput.classList.remove("hidden");
+      apiModelCustomInput.value = modelToUse || defaultModel;
+      return;
+    }
+
+    apiModelSelect.classList.remove("hidden");
+    apiModelCustomInput.classList.add("hidden");
+    apiModelSelect.innerHTML = "";
+
+    models.forEach((m) => {
+      const opt = document.createElement("option");
+      opt.value = m.value;
+      opt.textContent = m.label;
+      apiModelSelect.appendChild(opt);
+    });
+
+    const knownValues = models.map((m) => m.value);
+    if (modelToUse && !knownValues.includes(modelToUse)) {
+      const opt = document.createElement("option");
+      opt.value = modelToUse;
+      opt.textContent = `${modelToUse} (saved)`;
+      apiModelSelect.appendChild(opt);
+    }
+
+    apiModelSelect.value = modelToUse || models[0]?.value || "";
+  }
 
   function initializeApiState() {
     apiProviderSelect.value = state.apiProvider;
     apiKeyInput.value = state.apiKey;
     apiBaseUrlInput.value = state.apiBaseUrl;
-    apiModelInput.value = state.apiModel;
+    populateModelField(state.apiProvider, state.apiModel);
 
     if (state.apiProvider === "custom" || state.apiProvider === "openrouter" || state.apiProvider === "kimi") {
       apiBaseUrlInput.removeAttribute("readonly");
@@ -599,6 +834,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnBannerApi) {
     btnBannerApi.addEventListener("click", () => {
       apiConfigDrawer.classList.remove("hidden");
+      closeMobileSidebar();
       apiKeyInput.focus();
     });
   }
@@ -687,7 +923,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Show/Hide Settings drawer
-  btnShowApiSettings.addEventListener("click", () => apiConfigDrawer.classList.toggle("hidden"));
+  function closeMobileSidebar() {
+    if (winSidebar) winSidebar.classList.remove("sidebar-open");
+    if (sidebarBackdrop) sidebarBackdrop.classList.add("hidden");
+  }
+
+  btnShowApiSettings.addEventListener("click", () => {
+    const willOpen = apiConfigDrawer.classList.contains("hidden");
+    apiConfigDrawer.classList.toggle("hidden");
+    if (willOpen) closeMobileSidebar();
+  });
   btnCloseApi.addEventListener("click", () => apiConfigDrawer.classList.add("hidden"));
 
   // Toggle Masking
@@ -707,10 +952,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const key = apiKeyInput.value.trim();
     const provider = apiProviderSelect.value;
     const url = apiBaseUrlInput.value.trim();
-    const model = apiModelInput.value.trim();
+    const model = getSelectedModel();
 
     if (!key) {
       showApiFeedback("Please enter an API Key.", "error");
+      return;
+    }
+    if (!model) {
+      showApiFeedback("Please select or enter a model name.", "error");
       return;
     }
     state.apiKey = key;
@@ -759,7 +1008,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const prov = e.target.value;
     const defaults = PROVIDER_DEFAULTS[prov];
     apiBaseUrlInput.value = defaults.baseUrl;
-    apiModelInput.value = defaults.model;
+    populateModelField(prov, defaults.model);
 
     if (prov === "custom" || prov === "openrouter" || prov === "kimi") {
       apiBaseUrlInput.removeAttribute("readonly");
@@ -779,6 +1028,7 @@ document.addEventListener("DOMContentLoaded", () => {
     prepareChunkImpactSnapshot();
     const strat = e.target.value;
     state.strategy = strat;
+    updateChunkStrategyRecommendation(strat);
     
     // Show/hide relevant sliders
     controlChunkSize.classList.add("hidden");
@@ -879,6 +1129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   sampleJdSelect.addEventListener("change", (e) => {
     const val = e.target.value;
     if (val && SAMPLES.jds[val]) {
+      clearSelectedJdFile();
       jdTextInput.value = SAMPLES.jds[val];
     } else {
       jdTextInput.value = "";
@@ -901,43 +1152,56 @@ document.addEventListener("DOMContentLoaded", () => {
   resumeTextInput.addEventListener("input", validateInputs);
 
   function validateInputs() {
-    const hasJd = jdTextInput.value.trim().length > 30;
+    const hasJd = jdTextInput.value.trim().length > 30 || state.jdSelectedFile !== null;
     const hasResume = resumeTextInput.value.trim().length > 30 || state.selectedFile !== null;
     btnCompare.disabled = !(hasJd && hasResume);
   }
 
-  // File Upload drag/drop handlers
-  dropZone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropZone.classList.add("dragover");
-  });
+  function setupFileDropZone(zoneEl, inputEl, onFile) {
+    if (!zoneEl || !inputEl) return;
 
-  dropZone.addEventListener("dragleave", () => {
-    dropZone.classList.remove("dragover");
-  });
+    zoneEl.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
+      inputEl.click();
+    });
 
-  dropZone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dropZone.classList.remove("dragover");
-    const files = e.dataTransfer.files;
-    if (files.length > 0) handleFileSelected(files[0]);
-  });
+    zoneEl.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      zoneEl.classList.add("dragover");
+    });
 
-  resumeFileInput.addEventListener("change", (e) => {
-    const files = e.target.files;
-    if (files.length > 0) handleFileSelected(files[0]);
-  });
+    zoneEl.addEventListener("dragleave", () => {
+      zoneEl.classList.remove("dragover");
+    });
 
-  function handleFileSelected(file) {
+    zoneEl.addEventListener("drop", (e) => {
+      e.preventDefault();
+      zoneEl.classList.remove("dragover");
+      const files = e.dataTransfer.files;
+      if (files.length > 0) onFile(files[0]);
+    });
+
+    inputEl.addEventListener("change", (e) => {
+      const files = e.target.files;
+      if (files.length > 0) onFile(files[0]);
+    });
+  }
+
+  function acceptDocumentFile(file) {
     const extension = file.name.split(".").pop().toLowerCase();
     if (!["pdf", "docx", "txt"].includes(extension)) {
       alert("Unsupported file format. Please upload a PDF, DOCX, or TXT document.");
-      return;
+      return false;
     }
+    return true;
+  }
+
+  function handleResumeFileSelected(file) {
+    if (!acceptDocumentFile(file)) return;
     state.selectedFile = file;
     fileStatusText.textContent = `Selected: ${file.name}`;
     fileStatusIndicator.classList.remove("hidden");
-    
+
     sampleResumeSelect.value = "";
     resumeTextInput.value = "";
     resumeTextInput.placeholder = "Resume file loaded. Paste input disabled.";
@@ -954,10 +1218,42 @@ document.addEventListener("DOMContentLoaded", () => {
     validateInputs();
   }
 
+  function handleJdFileSelected(file) {
+    if (!acceptDocumentFile(file)) return;
+    state.jdSelectedFile = file;
+    jdFileStatusText.textContent = `Selected: ${file.name}`;
+    jdFileStatusIndicator.classList.remove("hidden");
+
+    sampleJdSelect.value = "";
+    jdTextInput.value = "";
+    jdTextInput.placeholder = "JD file loaded. Paste input disabled.";
+    jdTextInput.disabled = true;
+    validateInputs();
+  }
+
+  function clearSelectedJdFile() {
+    state.jdSelectedFile = null;
+    jdFileInput.value = "";
+    jdFileStatusIndicator.classList.add("hidden");
+    jdTextInput.disabled = false;
+    jdTextInput.placeholder = "Or paste the job description details here...";
+    validateInputs();
+  }
+
+  setupFileDropZone(dropZone, resumeFileInput, handleResumeFileSelected);
+  setupFileDropZone(jdDropZone, jdFileInput, handleJdFileSelected);
+
   btnRemoveFile.addEventListener("click", (e) => {
     e.stopPropagation();
     clearSelectedFile();
   });
+
+  if (btnRemoveJdFile) {
+    btnRemoveJdFile.addEventListener("click", (e) => {
+      e.stopPropagation();
+      clearSelectedJdFile();
+    });
+  }
 
   // Client-side text extraction buffers
   async function parseFileText(file) {
@@ -1459,13 +1755,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================================
 
   btnCompare.addEventListener("click", async () => {
-    state.jdText = jdTextInput.value.trim();
-    
     // Show spinner overlay
     scannerSection.classList.remove("hidden");
     updateScannerState("Extracting Documents...", "Checking local buffers and converting uploaded documents.", 15);
-    
+
     try {
+      if (state.jdSelectedFile) {
+        state.jdText = await parseFileText(state.jdSelectedFile);
+      } else {
+        state.jdText = jdTextInput.value.trim();
+      }
+
       if (state.selectedFile) {
         state.resumeText = await parseFileText(state.selectedFile);
       } else {
@@ -1555,12 +1855,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Gemini API Caller
   async function callGeminiAPI(jd, resume, key, model) {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-    
-    const requestBody = {
-      systemInstruction: {
-        parts: [
-          {
-            text: `You are an expert recruiter, hiring manager, and ATS evaluator.
+
+    const baseSystem = `You are an expert recruiter, hiring manager, and ATS evaluator.
 Your task is to compare a candidate's resume against a job description and calculate how well the candidate qualifies for the role.
 Analyze how specific parts (chunks) align. Focus on transparency, semantic mappings, and actionable recommendations.
 
@@ -1598,7 +1894,13 @@ Return ONLY a single valid JSON object following this JSON schema exactly:
     }
   ],
   "summary": string
-}`
+}`;
+
+    const requestBody = {
+      systemInstruction: {
+        parts: [
+          {
+            text: buildSystemPrompt(baseSystem)
           }
         ]
       },
@@ -1646,8 +1948,8 @@ Return ONLY a single valid JSON object following this JSON schema exactly:
   // Call OpenAI API compatible Endpoint
   async function callOpenAICompatibleAPI(provider, key, baseUrl, model, jd, resume) {
     const endpoint = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
-    
-    const systemPrompt = `You are an expert recruiter, hiring manager, and ATS evaluator.
+
+    const baseSystem = `You are an expert recruiter, hiring manager, and ATS evaluator.
 Your task is to compare a candidate's resume against a job description and calculate how well the candidate qualifies for the role.
 
 Return ONLY a single valid JSON object following this JSON schema exactly:
@@ -1687,6 +1989,8 @@ Return ONLY a single valid JSON object following this JSON schema exactly:
 }
 
 Ensure the output is valid JSON without markdown wrapping.`;
+
+    const systemPrompt = buildSystemPrompt(baseSystem);
 
     const userPrompt = `JOB DESCRIPTION:\n${jd}\n\nRESUME:\n${resume}`;
 
@@ -1736,8 +2040,8 @@ Ensure the output is valid JSON without markdown wrapping.`;
   // Call Claude API
   async function callClaudeAPI(key, baseUrl, model, jd, resume) {
     const endpoint = `${baseUrl.replace(/\/$/, '')}/messages`;
-    
-    const systemPrompt = `You are an expert recruiter, hiring manager, and ATS evaluator.
+
+    const baseSystem = `You are an expert recruiter, hiring manager, and ATS evaluator.
 Your task is to compare a candidate's resume against a job description and calculate how well the candidate qualifies for the role.
 
 Return ONLY a single valid JSON object following this JSON schema exactly:
@@ -1777,6 +2081,8 @@ Return ONLY a single valid JSON object following this JSON schema exactly:
 }
 
 Ensure the output is valid JSON without markdown wrapping.`;
+
+    const systemPrompt = buildSystemPrompt(baseSystem);
 
     const userPrompt = `JOB DESCRIPTION:\n${jd}\n\nRESUME:\n${resume}`;
 

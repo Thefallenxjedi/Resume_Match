@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ResuMatch ATS — Resume Match Engine & Debugger</title>
   <meta name="description" content="A transparent Resume vs Job Description chunking and matching debugger. Inspect chunks, edit mappings, and optimize alignment in real-time.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   
   <!-- Preconnect and Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,43 +29,25 @@
   <!-- Windows 10 App Frame -->
   <div class="win-window">
     
-    <!-- App Header -->
-    <header class="win-title-bar">
-      <div class="win-title-icon-wrapper">
+    <!-- Compact App Header -->
+    <header class="app-header">
+      <button id="btn-sidebar-toggle" type="button" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+        <i data-lucide="panel-left"></i>
+      </button>
+      <div class="app-header-brand">
         <i data-lucide="cpu" class="win-app-icon"></i>
-        <span class="win-title-text">ResuMatch ATS</span>
+        <span class="win-title-text">ResuMatch</span>
+      </div>
+      <div class="app-header-actions">
+        <span id="active-provider-badge" class="badge badge-required">API Key Required</span>
+        <button id="btn-show-api-settings" type="button" class="win-cmd-btn">
+          <i data-lucide="settings"></i>
+          <span class="header-btn-label">API Settings</span>
+        </button>
       </div>
     </header>
 
-    <!-- App Command Bar -->
-    <div class="win-command-bar">
-      <button id="btn-show-api-settings" class="win-cmd-btn">
-        <i data-lucide="settings"></i>
-        <span>API Settings</span>
-      </button>
-      <div class="win-cmd-separator"></div>
-      <div class="win-cmd-status">
-        <span class="status-label">LLM Provider:</span>
-        <span id="active-provider-badge" class="badge badge-required">API Key Required</span>
-      </div>
-    </div>
-
-    <!-- Value Proposition Hero -->
-    <section class="value-hero">
-      <div class="value-hero-content">
-        <h1 class="value-hero-headline">If AI checks your resume, see how that AI actually thinks.</h1>
-        <p class="value-hero-subtext">Companies use ATS and AI systems that chunk your resume, compare it section-by-section to the job description, and score your fit. ResuMatch mirrors that process so you can optimize your resume <em>before</em> you apply.</p>
-        <ul class="value-hero-benefits">
-          <li><i data-lucide="layers"></i> Transparent chunking — see exactly how your resume is split</li>
-          <li><i data-lucide="git-merge"></i> Real-time alignment maps between resume and JD sections</li>
-          <li><i data-lucide="sparkles"></i> AI-powered scores, gap analysis, and rewrite suggestions</li>
-        </ul>
-        <button id="btn-hero-howitworks" type="button" class="win-btn win-btn-blue value-hero-cta">
-          <i data-lucide="help-circle"></i>
-          <span>See how it works</span>
-        </button>
-      </div>
-    </section>
+    <div id="sidebar-backdrop" class="sidebar-backdrop hidden" aria-hidden="true"></div>
 
     <!-- API Configuration Drawer (Hidden by Default) -->
     <div id="api-config-drawer" class="win-config-drawer hidden">
@@ -111,11 +94,12 @@
           </div>
 
           <div class="form-group">
-            <label for="api-model-input" class="form-label control-label-with-tip">
+            <label for="api-model-select" class="form-label control-label-with-tip">
               Model Name
               <span class="tooltip-trigger" data-tooltip="The specific AI model to use for evaluation. Faster models (e.g. gemini-2.5-flash) are recommended for quick results." tabindex="0"><i data-lucide="help-circle"></i></span>
             </label>
-            <input type="text" id="api-model-input" class="win-input">
+            <select id="api-model-select" class="win-select full-width"></select>
+            <input type="text" id="api-model-custom" class="win-input hidden" placeholder="Enter model ID (e.g. llama3, deepseek-r1)">
           </div>
         </div>
 
@@ -161,8 +145,25 @@
     <div class="win-workspace">
       
       <!-- Left Sidebar: Controls & Strategies -->
-      <aside class="win-sidebar">
+      <aside id="win-sidebar" class="win-sidebar">
         
+        <div class="sidebar-intro">
+          <h2 class="sidebar-intro-title">See how AI evaluates your resume</h2>
+          <p class="sidebar-intro-text">Companies chunk resumes and score fit section-by-section. ResuMatch mirrors that process so you can optimize before you apply.</p>
+          <div class="sidebar-callout sidebar-callout-privacy">
+            <i data-lucide="shield-check"></i>
+            <span>Your data stays in your browser — we never store your resume or API key on any server.</span>
+          </div>
+          <div class="sidebar-callout sidebar-callout-api">
+            <i data-lucide="sparkles"></i>
+            <span><strong>AI Judge</strong> with your API key gives the most accurate scores and rewrite suggestions.</span>
+          </div>
+          <button id="btn-hero-howitworks" type="button" class="win-btn win-btn-blue sidebar-intro-cta">
+            <i data-lucide="help-circle"></i>
+            <span>See how it works</span>
+          </button>
+        </div>
+
         <!-- Panel 1: Chunking Engine Settings -->
         <div class="sidebar-section">
           <h2 class="sidebar-section-title">Chunking Engine</h2>
@@ -173,14 +174,15 @@
               <span class="tooltip-trigger" data-tooltip="How your documents are split into pieces. Section-based works best for resumes (Experience, Skills). Fixed/Token gives precise size control. Semantic uses AI-like boundaries." tabindex="0"><i data-lucide="help-circle"></i></span>
             </label>
             <select id="chunk-strategy-select" class="win-select full-width">
-              <option value="section" selected>Section-Based Chunking (Default)</option>
-              <option value="fixed">Fixed Character Chunking</option>
-              <option value="paragraph">Paragraph Chunking</option>
-              <option value="sentence">Sentence Chunking</option>
-              <option value="token">Token Chunking</option>
-              <option value="semantic">Semantic Chunking (AI Boundary)</option>
+              <option value="section" selected>Section-Based (Recommended)</option>
               <option value="hybrid">Hybrid (Section + Para)</option>
+              <option value="paragraph">Paragraph Chunking</option>
+              <option value="fixed">Fixed Character Chunking</option>
+              <option value="token">Token Chunking</option>
+              <option value="sentence">Sentence Chunking</option>
+              <option value="semantic">Semantic Chunking (AI Boundary)</option>
             </select>
+            <div id="chunk-strategy-recommendation" class="chunk-strategy-recommendation"></div>
           </div>
 
           <!-- Slider: Chunk Size (Shows only for Fixed, Token, Hybrid) -->
@@ -258,13 +260,25 @@
           <div class="sidebar-control-group">
             <label for="match-method-select" class="sidebar-label control-label-with-tip">
               Similarity Method
-              <span class="tooltip-trigger" data-tooltip="TF-IDF and Cosine run instantly in your browser (no API key). AI Judge sends chunks to your LLM for recruiter-style scoring — requires an API key." tabindex="0"><i data-lucide="help-circle"></i></span>
+              <span class="tooltip-trigger" data-tooltip="Local TF-IDF/Cosine work free in-browser. AI Judge uses your API key for recruiter-quality scores — best results." tabindex="0"><i data-lucide="help-circle"></i></span>
             </label>
             <select id="match-method-select" class="win-select full-width">
               <option value="tfidf">Keyword Overlap (TF-IDF)</option>
               <option value="cosine">Local Cosine Similarity</option>
-              <option value="ai-judge" selected>AI Judge (LLM Evaluator)</option>
+              <option value="ai-judge" selected>AI Judge (Best Results)</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Panel 3: Custom AI Instructions -->
+        <div class="sidebar-section">
+          <h2 class="sidebar-section-title">Custom AI Instructions</h2>
+          <div class="sidebar-control-group">
+            <label for="custom-prompt-input" class="sidebar-label control-label-with-tip">
+              Optional prompt
+              <span class="tooltip-trigger" data-tooltip="Extra instructions sent to the AI judge with your evaluation, e.g. focus on leadership, target role, or industries to emphasize." tabindex="0"><i data-lucide="help-circle"></i></span>
+            </label>
+            <textarea id="custom-prompt-input" class="win-textarea sidebar-prompt-textarea" rows="3" placeholder="Optional: e.g. Focus on backend roles, emphasize leadership, ignore internships..."></textarea>
           </div>
         </div>
 
@@ -333,7 +347,18 @@
                     <option value="marketing-mgr">Product Marketing Director</option>
                   </select>
                 </div>
-                <textarea id="jd-text-input" class="win-textarea" placeholder="Paste the job description details here..."></textarea>
+                <div id="jd-drop-zone" class="win-drop-zone win-drop-zone-compact">
+                  <input type="file" id="jd-file-input" class="hidden" accept=".pdf,.docx,.txt">
+                  <i data-lucide="upload-cloud" class="win-drop-icon"></i>
+                  <span class="drop-label">Upload JD file, or <span class="drop-underline">browse</span></span>
+                  <span class="drop-sublabel">PDF, DOCX, or TXT</span>
+                  <div id="jd-file-status-indicator" class="win-file-status hidden">
+                    <i data-lucide="file-check" class="success-icon"></i>
+                    <span id="jd-file-status-text" class="file-name-span">job.pdf</span>
+                    <button id="btn-remove-jd-file" type="button" class="btn-win-circle-danger" title="Remove"><i data-lucide="x"></i></button>
+                  </div>
+                </div>
+                <textarea id="jd-text-input" class="win-textarea" placeholder="Or paste the job description details here..."></textarea>
               </div>
 
               <!-- Resume Column -->
@@ -803,6 +828,8 @@
     </div>
 
   </div>
+
+  <div id="tooltip-portal" class="tooltip-portal hidden" role="tooltip"></div>
 
   <!-- Core Javascript File -->
   <script src="app.js"></script>

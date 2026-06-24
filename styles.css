@@ -52,11 +52,20 @@ body {
   background-color: var(--win-bg-desktop);
   color: var(--win-text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 16px;
-  overflow: hidden;
+  align-items: stretch;
+  padding: 8px;
+  overflow: auto;
+}
+
+@media (min-width: 768px) {
+  body {
+    align-items: center;
+    padding: 16px;
+    overflow: hidden;
+  }
 }
 
 .hidden {
@@ -69,7 +78,7 @@ body {
 
 .win-window {
   width: 100%;
-  height: calc(100vh - 32px);
+  height: 100dvh;
   max-width: 1500px;
   background-color: var(--win-bg-window);
   border: 1px solid var(--win-border-color);
@@ -81,16 +90,80 @@ body {
   overflow: hidden;
 }
 
-/* Title Bar Styling */
-.win-title-bar {
-  height: 40px;
+@media (min-width: 768px) {
+  .win-window {
+    height: calc(100vh - 32px);
+    height: calc(100dvh - 32px);
+  }
+}
+
+/* Compact App Header */
+.app-header {
+  height: 44px;
+  min-height: 44px;
   background-color: var(--win-bg-window);
   border-bottom: 1px solid var(--win-border-color);
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  user-select: none;
+  justify-content: space-between;
+  padding: 0 10px 0 6px;
+  gap: 8px;
   flex-shrink: 0;
+  z-index: 60;
+}
+
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--win-border-color);
+  background: var(--win-bg-sidebar);
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn i {
+  width: 16px;
+  height: 16px;
+}
+
+@media (min-width: 768px) {
+  .sidebar-toggle-btn {
+    display: none;
+  }
+}
+
+.header-btn-label {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .header-btn-label {
+    display: inline;
+  }
+}
+
+/* Title Bar Styling (legacy helpers) */
+.win-title-bar {
+  display: none;
 }
 
 .win-title-icon-wrapper {
@@ -109,18 +182,113 @@ body {
   font-size: 14px;
   color: var(--win-text-primary);
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Command Bar (Toolbar) */
 .win-command-bar {
-  height: 40px;
-  background-color: var(--win-bg-sidebar);
-  border-bottom: 1px solid var(--win-border-color);
+  display: none;
+}
+
+/* Sidebar Intro (moved from hero) */
+.sidebar-intro {
+  background: var(--win-accent-light);
+  border: 1px solid rgba(0, 120, 215, 0.2);
+  border-radius: 4px;
+  padding: 10px;
   display: flex;
-  align-items: center;
-  padding: 0 8px;
+  flex-direction: column;
   gap: 8px;
+}
+
+.sidebar-intro-title {
+  font-family: 'Outfit', var(--win-font);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--win-text-primary);
+}
+
+.sidebar-intro-text {
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--win-text-secondary);
+}
+
+.sidebar-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 10px;
+  line-height: 1.45;
+  padding: 6px 8px;
+  border-radius: 3px;
+  background: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+}
+
+.sidebar-callout i {
+  width: 13px;
+  height: 13px;
   flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.sidebar-callout-privacy i {
+  color: var(--win-success);
+}
+
+.sidebar-callout-api i {
+  color: var(--win-accent);
+}
+
+.sidebar-intro-cta {
+  font-size: 11px;
+  padding: 5px 10px;
+  height: auto;
+  width: 100%;
+  justify-content: center;
+}
+
+.chunk-strategy-recommendation {
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--win-text-secondary);
+  background: var(--win-bg-window);
+  border: 1px solid var(--win-border-color);
+  border-left: 3px solid var(--win-accent);
+  padding: 6px 8px;
+  border-radius: 0 3px 3px 0;
+}
+
+.chunk-strategy-recommendation strong {
+  color: var(--win-accent);
+}
+
+.sidebar-prompt-textarea {
+  min-height: 72px;
+  font-size: 11px;
+  resize: vertical;
+}
+
+.win-drop-zone-compact {
+  min-height: 72px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 80;
+}
+
+@media (min-width: 768px) {
+  .sidebar-backdrop {
+    display: none !important;
+  }
 }
 
 .win-cmd-btn {
@@ -193,78 +361,8 @@ body {
   border-color: rgba(16, 124, 65, 0.3);
 }
 
-/* --------------------------------------------------------------------------
-   Value Proposition Hero
-   -------------------------------------------------------------------------- */
-
-.value-hero {
-  background: linear-gradient(135deg, var(--win-accent-light) 0%, #f8fbff 100%);
-  border-bottom: 1px solid var(--win-border-color);
-  padding: 14px 20px;
-  flex-shrink: 0;
-}
-
-.value-hero-content {
-  max-width: 900px;
-}
-
-.value-hero-headline {
-  font-family: 'Outfit', var(--win-font);
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--win-text-primary);
-  line-height: 1.35;
-  margin-bottom: 6px;
-}
-
-.value-hero-subtext {
-  font-size: 12px;
-  color: var(--win-text-secondary);
-  line-height: 1.55;
-  margin-bottom: 10px;
-}
-
-.value-hero-benefits {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 20px;
-  margin-bottom: 12px;
-}
-
-.value-hero-benefits li {
-  font-size: 11px;
-  color: var(--win-text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.value-hero-benefits li i {
-  width: 13px;
-  height: 13px;
-  color: var(--win-accent);
-  flex-shrink: 0;
-}
-
-.value-hero-cta {
-  font-size: 12px;
-  padding: 6px 14px;
-  height: auto;
-}
-
-/* --------------------------------------------------------------------------
-   Tooltips
-   -------------------------------------------------------------------------- */
-
-.control-label-with-tip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
+/* Tooltips — JS portal (no clipping) */
 .tooltip-trigger {
-  position: relative;
   display: inline-flex;
   align-items: center;
   cursor: help;
@@ -277,14 +375,10 @@ body {
   height: 13px;
 }
 
-.tooltip-trigger::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 260px;
+.tooltip-portal {
+  position: fixed;
+  z-index: 9999;
+  max-width: 280px;
   padding: 8px 10px;
   background: var(--win-text-primary);
   color: var(--win-text-white);
@@ -292,40 +386,36 @@ body {
   font-weight: 400;
   line-height: 1.45;
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  opacity: 0;
-  visibility: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   pointer-events: none;
-  transition: opacity 0.15s, visibility 0.15s;
-  z-index: 200;
-  white-space: normal;
-  text-align: left;
 }
 
-.tooltip-trigger::before {
+.tooltip-portal.tooltip-below::before {
   content: '';
   position: absolute;
-  bottom: calc(100% + 2px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: -5px;
+  left: 12px;
   border: 5px solid transparent;
-  border-top-color: var(--win-text-primary);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s, visibility 0.15s;
-  z-index: 200;
+  border-bottom-color: var(--win-text-primary);
 }
 
-.tooltip-trigger:hover::after,
-.tooltip-trigger:hover::before,
-.tooltip-trigger:focus::after,
-.tooltip-trigger:focus::before {
-  opacity: 1;
-  visibility: visible;
+.tooltip-portal:not(.tooltip-below)::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 12px;
+  border: 5px solid transparent;
+  border-top-color: var(--win-text-primary);
 }
 
 .win-checkbox-label .tooltip-trigger {
   margin-left: 4px;
+}
+
+.control-label-with-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* --------------------------------------------------------------------------
@@ -523,15 +613,15 @@ body {
 
 .win-config-drawer {
   position: absolute;
-  top: 80px;
+  top: 44px;
   left: 0;
   width: 100%;
-  max-height: calc(100% - 80px);
+  max-height: calc(100% - 44px);
   overflow-y: auto;
   background-color: var(--win-bg-window);
   border-bottom: 1px solid var(--win-border-dark);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  z-index: 50;
+  z-index: 100;
   animation: winSlideDown 0.15s ease-out forwards;
 }
 
@@ -752,19 +842,46 @@ body {
   display: flex;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 /* Sidebar Layout */
 .win-sidebar {
   width: 280px;
+  max-width: 85vw;
   background-color: var(--win-bg-sidebar);
   border-right: 1px solid var(--win-border-color);
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
   overflow-y: auto;
   flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .win-sidebar {
+    position: fixed;
+    top: 44px;
+    left: 0;
+    bottom: 0;
+    z-index: 90;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .win-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .win-tab-pane {
+    padding: 12px;
+  }
+
+  .win-tab-btn span {
+    white-space: nowrap;
+  }
 }
 
 .sidebar-section {
@@ -895,8 +1012,16 @@ body {
   display: flex;
   background-color: var(--win-bg-sidebar);
   border-bottom: 1px solid var(--win-border-color);
-  padding-left: 10px;
+  padding-left: 4px;
   flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.win-tab-bar::-webkit-scrollbar {
+  height: 4px;
 }
 
 .win-tab-btn {
@@ -905,16 +1030,18 @@ body {
   border-right: 1px solid transparent;
   border-left: 1px solid transparent;
   border-bottom: 3px solid transparent;
-  padding: 10px 16px;
+  padding: 10px 12px;
   font-family: var(--win-font);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--win-text-secondary);
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: default;
+  gap: 6px;
+  cursor: pointer;
   transition: background-color var(--win-transition), color var(--win-transition);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .win-tab-btn:hover {
@@ -2173,6 +2300,7 @@ body {
     display: block !important;
   }
 
+  .app-header,
   .win-title-bar,
   .win-command-bar,
   .win-config-drawer,
