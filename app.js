@@ -402,7 +402,8 @@ document.addEventListener("DOMContentLoaded", () => {
     preserveHeaders: true,
     minChunkLength: 25,
     similarityMethod: "ai-judge",
-    isDashboardStale: false
+    isDashboardStale: false,
+    hasRunEvaluation: false
   };
 
   // PROVIDER DEFAULTS
@@ -448,6 +449,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnSaveApi = document.getElementById("btn-save-api");
   const btnClearApi = document.getElementById("btn-clear-api");
   const apiFeedbackMsg = document.getElementById("api-feedback-msg");
+
+  // DOM Elements - Hero & Banners
+  const btnHeroHowitworks = document.getElementById("btn-hero-howitworks");
+  const apiKeyBanner = document.getElementById("api-key-banner");
+  const btnDismissBanner = document.getElementById("btn-dismiss-banner");
+  const btnBannerApi = document.getElementById("btn-banner-api");
+  const btnBannerHowitworks = document.getElementById("btn-banner-howitworks");
+
+  // DOM Elements - Chunk Impact
+  const chunkImpactReport = document.getElementById("chunk-impact-report");
+  const chunkImpactBody = document.getElementById("chunk-impact-body");
+  const btnChunkImpactRerun = document.getElementById("btn-chunk-impact-rerun");
+  const dashboardStaleNotice = document.getElementById("dashboard-stale-notice");
+
+  let pendingChunkSnapshot = null;
 
   // DOM Elements - Sidebar Controls
   const chunkStrategySelect = document.getElementById("chunk-strategy-select");
@@ -558,14 +574,117 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (state.apiKey) {
-      activeProviderBadge.textContent = `${state.apiProvider.toUpperCase()} Active`;
+      const providerLabel = state.apiProvider.charAt(0).toUpperCase() + state.apiProvider.slice(1);
+      activeProviderBadge.textContent = `${providerLabel} Active`;
       activeProviderBadge.className = "badge badge-active";
+      if (apiKeyBanner) apiKeyBanner.classList.add("hidden");
     } else {
-      activeProviderBadge.textContent = "Demo Mode";
-      activeProviderBadge.className = "badge badge-demo";
+      activeProviderBadge.textContent = "API Key Required";
+      activeProviderBadge.className = "badge badge-required";
     }
   }
   initializeApiState();
+
+  if (apiKeyBanner && !state.apiKey && !localStorage.getItem("resumatch_banner_dismissed")) {
+    apiKeyBanner.classList.remove("hidden");
+  }
+
+  if (btnDismissBanner) {
+    btnDismissBanner.addEventListener("click", () => {
+      apiKeyBanner.classList.add("hidden");
+      localStorage.setItem("resumatch_banner_dismissed", "1");
+    });
+  }
+
+  if (btnBannerApi) {
+    btnBannerApi.addEventListener("click", () => {
+      apiConfigDrawer.classList.remove("hidden");
+      apiKeyInput.focus();
+    });
+  }
+
+  function takeChunkSnapshot() {
+    const all = [...state.resumeChunks, ...state.jdChunks];
+    const avgSize = all.length > 0
+      ? Math.round(all.reduce((acc, c) => acc + c.charCount, 0) / all.length)
+      : 0;
+    return {
+      resumeCount: state.resumeChunks.length,
+      jdCount: state.jdChunks.length,
+      avgSize,
+      chunkSize: state.chunkSize,
+      overlap: state.overlapPercent,
+      strategy: state.strategy,
+      minChunkLength: state.minChunkLength
+    };
+  }
+
+  function prepareChunkImpactSnapshot() {
+    if (state.resumeChunks.length > 0 || state.jdChunks.length > 0) {
+      pendingChunkSnapshot = takeChunkSnapshot();
+    }
+  }
+
+  function getStrategyLabel(strat) {
+    const labels = {
+      section: "Section-Based",
+      fixed: "Fixed Character",
+      paragraph: "Paragraph",
+      sentence: "Sentence",
+      token: "Token",
+      semantic: "Semantic",
+      hybrid: "Hybrid"
+    };
+    return labels[strat] || strat;
+  }
+
+  function showChunkImpactReport(before, after) {
+    if (!state.evaluation) return;
+
+    const parts = [];
+    if (before.overlap !== after.overlap) {
+      parts.push(`Overlap changed from <strong>${before.overlap}%</strong> to <strong>${after.overlap}%</strong>.`);
+    }
+    if (before.chunkSize !== after.chunkSize) {
+      parts.push(`Chunk size changed from <strong>${before.chunkSize}</strong> to <strong>${after.chunkSize}</strong>.`);
+    }
+    if (before.strategy !== after.strategy) {
+      parts.push(`Strategy changed from <strong>${getStrategyLabel(before.strategy)}</strong> to <strong>${getStrategyLabel(after.strategy)}</strong>.`);
+    }
+    if (before.minChunkLength !== after.minChunkLength) {
+      parts.push(`Min chunk length changed from <strong>${before.minChunkLength}</strong> to <strong>${after.minChunkLength}</strong>.`);
+    }
+    if (before.resumeCount !== after.resumeCount || before.jdCount !== after.jdCount) {
+      parts.push(`Resume chunks: <strong>${before.resumeCount} → ${after.resumeCount}</strong>. JD chunks: <strong>${before.jdCount} → ${after.jdCount}</strong>.`);
+    }
+    if (before.avgSize !== after.avgSize) {
+      parts.push(`Average chunk size: <strong>${before.avgSize} → ${after.avgSize} chars</strong>.`);
+    }
+    if (parts.length === 0) return;
+
+    if (state.similarityMethod === "ai-judge") {
+      parts.push("AI scores are outdated — re-run evaluation to refresh results.");
+    }
+    chunkImpactBody.innerHTML = parts.join(" ");
+    chunkImpactReport.classList.remove("hidden");
+    updateStaleNotice();
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function updateStaleNotice() {
+    if (!dashboardStaleNotice) return;
+    if (state.isDashboardStale && state.evaluation && state.similarityMethod === "ai-judge") {
+      dashboardStaleNotice.classList.remove("hidden");
+    } else {
+      dashboardStaleNotice.classList.add("hidden");
+    }
+  }
+
+  function clearChunkImpactReport() {
+    if (chunkImpactReport) chunkImpactReport.classList.add("hidden");
+    state.isDashboardStale = false;
+    updateStaleNotice();
+  }
 
   // Show/Hide Settings drawer
   btnShowApiSettings.addEventListener("click", () => apiConfigDrawer.classList.toggle("hidden"));
@@ -657,6 +776,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Sidebar chunk adjustments
   chunkStrategySelect.addEventListener("change", (e) => {
+    prepareChunkImpactSnapshot();
     const strat = e.target.value;
     state.strategy = strat;
     
@@ -694,6 +814,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   chunkSizeSlider.addEventListener("input", (e) => {
+    prepareChunkImpactSnapshot();
     const val = parseInt(e.target.value);
     state.chunkSize = val;
     chunkSizeValue.textContent = state.strategy === "token" ? `${val} tokens` : `${val} chars`;
@@ -701,6 +822,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   chunkOverlapSlider.addEventListener("input", (e) => {
+    prepareChunkImpactSnapshot();
     const val = parseInt(e.target.value);
     state.overlapPercent = val;
     chunkOverlapValue.textContent = `${val}%`;
@@ -708,6 +830,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   semanticThresholdSlider.addEventListener("input", (e) => {
+    prepareChunkImpactSnapshot();
     const val = parseFloat(e.target.value);
     state.semanticThreshold = val;
     semanticThresholdValue.textContent = val.toFixed(2);
@@ -715,16 +838,19 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   chkMergeSmall.addEventListener("change", (e) => {
+    prepareChunkImpactSnapshot();
     state.mergeSmall = e.target.checked;
     runChunkingEngine(false);
   });
 
   chkPreserveHeaders.addEventListener("change", (e) => {
+    prepareChunkImpactSnapshot();
     state.preserveHeaders = e.target.checked;
     runChunkingEngine(false);
   });
 
   inputMinChunk.addEventListener("input", (e) => {
+    prepareChunkImpactSnapshot();
     state.minChunkLength = parseInt(e.target.value) || 10;
     debounceRechunk();
   });
@@ -939,6 +1065,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Calculate Similarity Matrix
     runLocalSimilarityMatching();
+
+    if (pendingChunkSnapshot) {
+      const after = takeChunkSnapshot();
+      showChunkImpactReport(pendingChunkSnapshot, after);
+      pendingChunkSnapshot = null;
+    }
   }
 
   function splitTextByStrategy(text, isResume) {
@@ -1314,6 +1446,7 @@ document.addEventListener("DOMContentLoaded", () => {
       summary: `Local indexing analysis calculated a ${avgScore}% Match rating. Chunks show matching density patterns around shared vocabulary. Map inspection identifies missing terms which should be embedded into the resume.`
     };
 
+    state.hasRunEvaluation = true;
     renderDashboard(state.evaluation);
   }
 
@@ -1342,39 +1475,56 @@ document.addEventListener("DOMContentLoaded", () => {
       // Step 2: Split chunks
       runChunkingEngine(true);
 
-      const mockKey = getMatchingMockKey();
       let evaluationData = null;
 
-      if (!state.apiKey && mockKey) {
-        updateScannerState("Retrieving Candidate Match (Demo Mode)...", "Executing alignment algorithms on sample.", 75);
-        await delay(1200);
-        evaluationData = SAMPLES.evaluations[mockKey];
-      } else if (!state.apiKey) {
-        alert("You are running in Demo Mode. To analyze custom inputs, please configure your preferred API Provider and enter your API Key in the settings panel.");
+      if (state.similarityMethod !== "ai-judge") {
+        updateScannerState("Rendering local match results...", "Computing TF-IDF/Cosine alignment scores.", 90);
+        await delay(400);
+
+        if (!state.evaluation) {
+          scannerSection.classList.add("hidden");
+          return;
+        }
+
+        state.hasRunEvaluation = true;
+        clearChunkImpactReport();
+        switchTab("dashboard");
         scannerSection.classList.add("hidden");
         return;
+      }
+
+      if (!state.apiKey) {
+        scannerSection.classList.add("hidden");
+        apiConfigDrawer.classList.remove("hidden");
+        showApiFeedback("Add your API key to run AI evaluation. See the guide below for free Gemini or OpenRouter keys.", "error");
+        apiKeyInput.focus();
+        switchTab("inputs");
+        return;
+      }
+
+      // Run real AI Judge API Call
+      updateScannerState(`Calling ${state.apiProvider.toUpperCase()} Judge Engine...`, `Analysing chunks and compiling structural alignment suggestion tables...`, 75);
+      
+      if (state.apiProvider === "gemini") {
+        evaluationData = await callGeminiAPI(state.jdText, state.resumeText, state.apiKey, state.apiModel);
+      } else if (state.apiProvider === "claude") {
+        evaluationData = await callClaudeAPI(state.apiKey, state.apiBaseUrl, state.apiModel, state.jdText, state.resumeText);
       } else {
-        // Run real AI Judge API Call
-        updateScannerState(`Calling ${state.apiProvider.toUpperCase()} Judge Engine...`, `Analysing chunks and compiling structural alignment suggestion tables...`, 75);
-        
-        if (state.apiProvider === "gemini") {
-          evaluationData = await callGeminiAPI(state.jdText, state.resumeText, state.apiKey, state.apiModel);
-        } else if (state.apiProvider === "claude") {
-          evaluationData = await callClaudeAPI(state.apiKey, state.apiBaseUrl, state.apiModel, state.jdText, state.resumeText);
-        } else {
-          evaluationData = await callOpenAICompatibleAPI(state.apiProvider, state.apiKey, state.apiBaseUrl, state.apiModel, state.jdText, state.resumeText);
-        }
+        evaluationData = await callOpenAICompatibleAPI(state.apiProvider, state.apiKey, state.apiBaseUrl, state.apiModel, state.jdText, state.resumeText);
       }
 
       updateScannerState("Rendering workspace dashboard...", "Building matrix grid lines and suggestion charts.", 95);
       await delay(500);
 
       state.evaluation = evaluationData;
+      state.hasRunEvaluation = true;
       
       // Override local mappings if the LLM provided structural mappings
       if (evaluationData.mappings && evaluationData.mappings.length > 0) {
         state.mappings = evaluationData.mappings;
       }
+
+      clearChunkImpactReport();
 
       // Render dashboard tabs
       renderDashboard(evaluationData);
@@ -1400,22 +1550,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  function getMatchingMockKey() {
-    const selectedJd = sampleJdSelect.value;
-    const selectedResume = sampleResumeSelect.value;
-    
-    if (selectedJd === "frontend-eng" && selectedResume === "frontend-eng-match") {
-      return "frontend-eng_frontend-eng-match";
-    }
-    if (selectedJd === "data-scientist" && selectedResume === "data-scientist-match") {
-      return "data-scientist_data-scientist-match";
-    }
-    if (selectedJd === "marketing-mgr" && selectedResume === "marketing-mgr-match") {
-      return "marketing-mgr_marketing-mgr-match";
-    }
-    return null;
   }
 
   // Gemini API Caller
@@ -2051,6 +2185,7 @@ Ensure the output is valid JSON without markdown wrapping.`;
 
     // 5. Render Debugger Tab
     renderDebuggerTab(data.debugger);
+    updateStaleNotice();
   }
 
   function createEmptyBulletDOM(text) {
@@ -2203,6 +2338,22 @@ Ensure the output is valid JSON without markdown wrapping.`;
       activePane.classList.remove("hidden");
       state.activeTab = tabName;
     }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  if (btnHeroHowitworks) {
+    btnHeroHowitworks.addEventListener("click", () => switchTab("howitworks"));
+  }
+
+  if (btnBannerHowitworks) {
+    btnBannerHowitworks.addEventListener("click", () => switchTab("howitworks"));
+  }
+
+  if (btnChunkImpactRerun) {
+    btnChunkImpactRerun.addEventListener("click", () => {
+      switchTab("inputs");
+      btnCompare.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
   }
 
   // ==========================================================================
@@ -2292,4 +2443,6 @@ Ensure the output is valid JSON without markdown wrapping.`;
     // Trigger Print
     window.print();
   });
+
+  if (window.lucide) lucide.createIcons();
 });

@@ -28,17 +28,11 @@
   <!-- Windows 10 App Frame -->
   <div class="win-window">
     
-    <!-- Title Bar -->
+    <!-- App Header -->
     <header class="win-title-bar">
       <div class="win-title-icon-wrapper">
         <i data-lucide="cpu" class="win-app-icon"></i>
-        <span class="win-title-text">ResuMatch ATS - Resume Debugger & Match Engine</span>
-      </div>
-      <!-- Mock Window Controls -->
-      <div class="win-window-controls">
-        <button class="win-control-btn" aria-label="Minimize"><span class="win-control-icon win-min"></span></button>
-        <button class="win-control-btn" aria-label="Maximize"><span class="win-control-icon win-max"></span></button>
-        <button class="win-control-btn win-btn-close" aria-label="Close"><span class="win-control-icon win-close"></span></button>
+        <span class="win-title-text">ResuMatch ATS</span>
       </div>
     </header>
 
@@ -51,9 +45,26 @@
       <div class="win-cmd-separator"></div>
       <div class="win-cmd-status">
         <span class="status-label">LLM Provider:</span>
-        <span id="active-provider-badge" class="badge badge-demo">Demo Mode</span>
+        <span id="active-provider-badge" class="badge badge-required">API Key Required</span>
       </div>
     </div>
+
+    <!-- Value Proposition Hero -->
+    <section class="value-hero">
+      <div class="value-hero-content">
+        <h1 class="value-hero-headline">If AI checks your resume, see how that AI actually thinks.</h1>
+        <p class="value-hero-subtext">Companies use ATS and AI systems that chunk your resume, compare it section-by-section to the job description, and score your fit. ResuMatch mirrors that process so you can optimize your resume <em>before</em> you apply.</p>
+        <ul class="value-hero-benefits">
+          <li><i data-lucide="layers"></i> Transparent chunking — see exactly how your resume is split</li>
+          <li><i data-lucide="git-merge"></i> Real-time alignment maps between resume and JD sections</li>
+          <li><i data-lucide="sparkles"></i> AI-powered scores, gap analysis, and rewrite suggestions</li>
+        </ul>
+        <button id="btn-hero-howitworks" type="button" class="win-btn win-btn-blue value-hero-cta">
+          <i data-lucide="help-circle"></i>
+          <span>See how it works</span>
+        </button>
+      </div>
+    </section>
 
     <!-- API Configuration Drawer (Hidden by Default) -->
     <div id="api-config-drawer" class="win-config-drawer hidden">
@@ -64,7 +75,10 @@
       <div class="drawer-body">
         <div class="drawer-fields-grid">
           <div class="form-group">
-            <label for="api-provider-select" class="form-label">API Provider</label>
+            <label for="api-provider-select" class="form-label control-label-with-tip">
+              API Provider
+              <span class="tooltip-trigger" data-tooltip="Choose which AI service powers the resume judge. Google Gemini works best in the browser with a free tier. OpenRouter gives access to many models with one key." tabindex="0"><i data-lucide="help-circle"></i></span>
+            </label>
             <select id="api-provider-select" class="win-select">
               <option value="gemini">Google Gemini</option>
               <option value="openai">OpenAI</option>
@@ -76,7 +90,10 @@
           </div>
 
           <div class="form-group">
-            <label for="api-key-input" class="form-label">API Key / Token</label>
+            <label for="api-key-input" class="form-label control-label-with-tip">
+              API Key / Token
+              <span class="tooltip-trigger" data-tooltip="Your personal API key from the provider. Stored only in your browser (localStorage) — never sent to any ResuMatch server." tabindex="0"><i data-lucide="help-circle"></i></span>
+            </label>
             <div class="input-password-wrapper">
               <input type="password" id="api-key-input" class="win-input" placeholder="Enter API Key...">
               <button id="btn-toggle-password" class="btn-toggle-pwd" type="button" title="Show/Hide">
@@ -86,12 +103,18 @@
           </div>
 
           <div class="form-group">
-            <label for="api-base-url-input" class="form-label">API Base URL</label>
+            <label for="api-base-url-input" class="form-label control-label-with-tip">
+              API Base URL
+              <span class="tooltip-trigger" data-tooltip="The endpoint URL for API requests. Pre-filled for most providers. Change only for custom/local models (e.g. Ollama)." tabindex="0"><i data-lucide="help-circle"></i></span>
+            </label>
             <input type="text" id="api-base-url-input" class="win-input" readonly>
           </div>
 
           <div class="form-group">
-            <label for="api-model-input" class="form-label">Model Name</label>
+            <label for="api-model-input" class="form-label control-label-with-tip">
+              Model Name
+              <span class="tooltip-trigger" data-tooltip="The specific AI model to use for evaluation. Faster models (e.g. gemini-2.5-flash) are recommended for quick results." tabindex="0"><i data-lucide="help-circle"></i></span>
+            </label>
             <input type="text" id="api-model-input" class="win-input">
           </div>
         </div>
@@ -100,6 +123,30 @@
         <div id="cors-notice" class="cors-notice hidden">
           <i data-lucide="alert-triangle" class="cors-icon"></i>
           <span class="cors-text">Direct browser calls to OpenAI/Anthropic keys will fail due to CORS. Use <strong>OpenRouter</strong> or local custom endpoints.</span>
+        </div>
+
+        <!-- Condensed API Key Guide -->
+        <div class="api-key-guide api-key-guide-compact">
+          <h4 class="api-key-guide-title"><i data-lucide="key-round"></i> How to get a free API key</h4>
+          <p class="api-key-guide-note">This app runs entirely in your browser. Your key powers the AI judge directly — we never see or store it on a server.</p>
+          <div class="api-provider-cards">
+            <div class="api-provider-card">
+              <strong>Google Gemini</strong> <span class="api-card-badge">Recommended · Free tier</span>
+              <ol class="api-card-steps">
+                <li>Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></li>
+                <li>Sign in and click <em>Create API key</em></li>
+                <li>Paste the key above and click Save</li>
+              </ol>
+            </div>
+            <div class="api-provider-card">
+              <strong>OpenRouter</strong> <span class="api-card-badge">Many models · Free credits</span>
+              <ol class="api-card-steps">
+                <li>Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a></li>
+                <li>Create an account and generate a key</li>
+                <li>Select OpenRouter above, paste key, and Save</li>
+              </ol>
+            </div>
+          </div>
         </div>
 
         <div class="drawer-actions">
@@ -121,7 +168,10 @@
           <h2 class="sidebar-section-title">Chunking Engine</h2>
           
           <div class="sidebar-control-group">
-            <label for="chunk-strategy-select" class="sidebar-label">Chunking Strategy</label>
+            <label for="chunk-strategy-select" class="sidebar-label control-label-with-tip">
+              Chunking Strategy
+              <span class="tooltip-trigger" data-tooltip="How your documents are split into pieces. Section-based works best for resumes (Experience, Skills). Fixed/Token gives precise size control. Semantic uses AI-like boundaries." tabindex="0"><i data-lucide="help-circle"></i></span>
+            </label>
             <select id="chunk-strategy-select" class="win-select full-width">
               <option value="section" selected>Section-Based Chunking (Default)</option>
               <option value="fixed">Fixed Character Chunking</option>
@@ -136,7 +186,10 @@
           <!-- Slider: Chunk Size (Shows only for Fixed, Token, Hybrid) -->
           <div id="control-chunk-size" class="sidebar-control-group">
             <div class="slider-header">
-              <span class="sidebar-label">Chunk Size</span>
+              <span class="sidebar-label control-label-with-tip">
+                Chunk Size
+                <span class="tooltip-trigger" data-tooltip="Maximum characters (or tokens) per chunk. Larger chunks keep more context but may blur specific skill matches. Smaller chunks are more precise but may miss broader themes." tabindex="0"><i data-lucide="help-circle"></i></span>
+              </span>
               <span id="chunk-size-value" class="slider-value">500 chars</span>
             </div>
             <input type="range" id="chunk-size-slider" class="win-slider" min="100" max="1500" step="50" value="500">
@@ -145,7 +198,10 @@
           <!-- Slider: Overlap (Shows only for Fixed, Token, Hybrid) -->
           <div id="control-chunk-overlap" class="sidebar-control-group">
             <div class="slider-header">
-              <span class="sidebar-label">Chunk Overlap</span>
+              <span class="sidebar-label control-label-with-tip">
+                Chunk Overlap
+                <span class="tooltip-trigger" data-tooltip="Percentage of text repeated between adjacent chunks. Higher overlap prevents important phrases from being cut at chunk boundaries — similar to how ATS systems retain context across sections." tabindex="0"><i data-lucide="help-circle"></i></span>
+              </span>
               <span id="chunk-overlap-value" class="slider-value">20%</span>
             </div>
             <input type="range" id="chunk-overlap-slider" class="win-slider" min="0" max="50" step="5" value="20">
@@ -154,7 +210,10 @@
           <!-- Slider: Semantic Threshold (Shows only for Semantic) -->
           <div id="control-semantic-threshold" class="sidebar-control-group hidden">
             <div class="slider-header">
-              <span class="sidebar-label">Semantic Threshold</span>
+              <span class="sidebar-label control-label-with-tip">
+                Semantic Threshold
+                <span class="tooltip-trigger" data-tooltip="How different two sentences must be before starting a new chunk. Lower = more chunks (finer splits). Higher = fewer chunks (broader groupings)." tabindex="0"><i data-lucide="help-circle"></i></span>
+              </span>
               <span id="semantic-threshold-value" class="slider-value">0.65</span>
             </div>
             <input type="range" id="semantic-threshold-slider" class="win-slider" min="0.1" max="0.9" step="0.05" value="0.65">
@@ -165,16 +224,31 @@
             <label class="win-checkbox-label">
               <input type="checkbox" id="chk-merge-small" checked>
               <span>Merge small chunks</span>
+              <span class="tooltip-trigger" data-tooltip="Combines tiny fragments below the minimum length into neighboring chunks so they are not lost during matching." tabindex="0"><i data-lucide="help-circle"></i></span>
             </label>
             <label class="win-checkbox-label">
               <input type="checkbox" id="chk-preserve-headers" checked>
               <span>Preserve section headers</span>
+              <span class="tooltip-trigger" data-tooltip="Keeps labels like EXPERIENCE or SKILLS attached to their chunk so the matcher knows which resume section it is evaluating." tabindex="0"><i data-lucide="help-circle"></i></span>
             </label>
           </div>
 
           <div class="sidebar-control-group">
-            <label for="input-min-chunk" class="sidebar-label">Min Chunk Length</label>
+            <label for="input-min-chunk" class="sidebar-label control-label-with-tip">
+              Min Chunk Length
+              <span class="tooltip-trigger" data-tooltip="Chunks shorter than this (in characters) are discarded or merged. Raise this to filter out noise; lower it to keep brief bullet points." tabindex="0"><i data-lucide="help-circle"></i></span>
+            </label>
             <input type="number" id="input-min-chunk" class="win-input-small" min="10" max="200" value="25">
+          </div>
+
+          <!-- Chunk Config Impact Report -->
+          <div id="chunk-impact-report" class="chunk-impact-report hidden">
+            <div class="chunk-impact-header">
+              <i data-lucide="activity"></i>
+              <span>Chunk Settings Changed</span>
+            </div>
+            <div id="chunk-impact-body" class="chunk-impact-body"></div>
+            <button id="btn-chunk-impact-rerun" type="button" class="win-btn win-btn-blue win-btn-small">Re-run Evaluate Fit</button>
           </div>
         </div>
 
@@ -182,7 +256,10 @@
         <div class="sidebar-section">
           <h2 class="sidebar-section-title">Match Engine</h2>
           <div class="sidebar-control-group">
-            <label for="match-method-select" class="sidebar-label">Similarity Method</label>
+            <label for="match-method-select" class="sidebar-label control-label-with-tip">
+              Similarity Method
+              <span class="tooltip-trigger" data-tooltip="TF-IDF and Cosine run instantly in your browser (no API key). AI Judge sends chunks to your LLM for recruiter-style scoring — requires an API key." tabindex="0"><i data-lucide="help-circle"></i></span>
+            </label>
             <select id="match-method-select" class="win-select full-width">
               <option value="tfidf">Keyword Overlap (TF-IDF)</option>
               <option value="cosine">Local Cosine Similarity</option>
@@ -233,6 +310,16 @@
           
           <!-- Pane 1: Input Documents -->
           <div id="pane-inputs" class="win-tab-pane" role="tabpanel">
+
+            <div id="api-key-banner" class="api-key-banner hidden">
+              <i data-lucide="key-round" class="api-key-banner-icon"></i>
+              <div class="api-key-banner-text">
+                <strong>AI evaluation requires your API key.</strong>
+                Chunking and local preview work for free. Add a free Gemini or OpenRouter key in <button type="button" id="btn-banner-api" class="link-btn">API Settings</button> or read the <button type="button" id="btn-banner-howitworks" class="link-btn">How It Works</button> guide.
+              </div>
+              <button id="btn-dismiss-banner" type="button" class="btn-close-drawer" title="Dismiss"><i data-lucide="x"></i></button>
+            </div>
+
             <div class="inputs-grid">
               
               <!-- Job Description Column -->
@@ -348,7 +435,7 @@
             
             <div id="dashboard-stale-notice" class="dashboard-stale-notice hidden">
               <i data-lucide="info" class="stale-icon"></i>
-              <span class="stale-text">Chunking configurations have changed. Displaying a local TF-IDF/Cosine preview. Click <strong>Evaluate Fit & Debug Resume</strong> to refresh AI metrics.</span>
+              <span class="stale-text">Chunking settings have changed. Your AI evaluation scores are outdated. Click <strong>Evaluate Fit & Debug Resume</strong> to refresh.</span>
             </div>
 
             <div class="dashboard-grid">
@@ -602,42 +689,83 @@
           <!-- Pane 6: How It Works -->
           <div id="pane-howitworks" class="win-tab-pane hidden" role="tabpanel">
             <div class="howitworks-container">
-              <h3 class="howitworks-title"><i data-lucide="help-circle" class="text-blue"></i> Match Engine Technical Workflow</h3>
-              <p class="howitworks-intro">ResuMatch ATS operates as an interactive debugger, breaking both documents into vector chunks and comparing alignments locally before running AI evaluations.</p>
+              <h3 class="howitworks-title"><i data-lucide="help-circle" class="text-blue"></i> How ResuMatch Works — Step by Step</h3>
+              <p class="howitworks-intro">ResuMatch shows you the same process companies use when AI screens your resume: split documents into chunks, compare them to the job description, and score your fit. Follow these steps to optimize your resume before you apply.</p>
               
               <div class="workflow-steps">
                 
                 <div class="workflow-step-card">
                   <div class="step-num-badge">1</div>
-                  <h4 class="step-title">Text Extraction</h4>
-                  <p class="step-desc">The file uploader extracts plain text client-side using PDF.js and Mammoth.js. Text formatting, spacing, and page elements are parsed into clean document buffers entirely in your browser.</p>
+                  <h4 class="step-title">Paste Your Documents</h4>
+                  <p class="step-desc">Add the job description and your resume on the Input Documents tab. Upload PDF, DOCX, or TXT files — text is extracted entirely in your browser. You can also load sample roles to explore the tool.</p>
                 </div>
 
                 <div class="workflow-step-card">
                   <div class="step-num-badge">2</div>
-                  <h4 class="step-title">Document Chunking</h4>
-                  <p class="step-desc">The text is split using your chosen strategy. Section-based chunking identifies logical divisions (e.g. Experience, Skills) using rules. Sliders let you customize fixed character boundaries and overlap margins to control context retention.</p>
+                  <h4 class="step-title">Watch the Engine Chunk</h4>
+                  <p class="step-desc">ATS systems don't read your resume as one block — they split it into sections and paragraphs. ResuMatch does the same so you can see exactly what the AI will evaluate. Adjust chunk size and overlap in the sidebar to experiment.</p>
                 </div>
 
                 <div class="workflow-step-card">
                   <div class="step-num-badge">3</div>
-                  <h4 class="step-title">Local Similarity Matching</h4>
-                  <p class="step-desc">A local TF-IDF (Term Frequency-Inverse Document Frequency) index is built from vocabulary. The engine computes Jaccard overlaps and Cosine Vector Similarity to match Resume chunks to JD chunks instantly as you edit.</p>
+                  <h4 class="step-title">Inspect Chunk Alignment</h4>
+                  <p class="step-desc">Open the Chunk Playground to see every resume and JD chunk side by side. Edit chunks, add new ones, and view alignment maps in the Visual Match Matrix to find gaps before submitting your application.</p>
                 </div>
 
                 <div class="workflow-step-card">
                   <div class="step-num-badge">4</div>
-                  <h4 class="step-title">AI Judge & Suggestion Engine</h4>
-                  <p class="step-desc">When you click evaluate, the matched chunk indexes are reviewed by the selected LLM provider. The AI judge acts as an expert recruiter to generate category scores, prioritized gaps, and rewrite suggestions.</p>
+                  <h4 class="step-title">Add Your API Key</h4>
+                  <p class="step-desc">AI scoring requires your own API key — the app runs in your browser and calls the AI directly. Keys are stored only on your device. See the free key guide below to get started in under two minutes.</p>
+                </div>
+
+                <div class="workflow-step-card">
+                  <div class="step-num-badge">5</div>
+                  <h4 class="step-title">Run AI Evaluation</h4>
+                  <p class="step-desc">Click <strong>Evaluate Fit &amp; Debug Resume</strong>. The AI judge reviews matched chunks like a recruiter — scoring skills, experience, tools, leadership, and education fit against the job requirements.</p>
+                </div>
+
+                <div class="workflow-step-card">
+                  <div class="step-num-badge">6</div>
+                  <h4 class="step-title">Use the Resume Debugger</h4>
+                  <p class="step-desc">The Debugger tab shows specific resume statements to rewrite, with suggested improvements and explanations of why each change increases your match score.</p>
                 </div>
 
               </div>
 
+              <!-- Why API Key -->
+              <div class="win-flat-card info-callout-card api-why-callout">
+                <span class="inspect-meta-title callout-title"><i data-lucide="shield-check"></i> Why you need your own API key</span>
+                <p class="callout-desc">ResuMatch has no backend server. Your documents and API key never leave your browser except when calling your chosen AI provider. A free Gemini or OpenRouter key lets you run unlimited evaluations at no cost to us.</p>
+              </div>
+
+              <!-- Full API Key Guide -->
+              <div class="api-key-guide">
+                <h4 class="api-key-guide-title"><i data-lucide="key-round"></i> Get your free API key</h4>
+                <div class="api-provider-cards">
+                  <div class="api-provider-card">
+                    <strong>Google Gemini</strong> <span class="api-card-badge">Recommended · Free tier · Works in browser</span>
+                    <ol class="api-card-steps">
+                      <li>Visit <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> and sign in with your Google account</li>
+                      <li>Click <em>Create API key</em> and copy the generated key</li>
+                      <li>Open <strong>API Settings</strong> in ResuMatch, select Google Gemini, paste your key, and click Save</li>
+                    </ol>
+                  </div>
+                  <div class="api-provider-card">
+                    <strong>OpenRouter</strong> <span class="api-card-badge">One key · Many models · Free credits</span>
+                    <ol class="api-card-steps">
+                      <li>Visit <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> and create an account</li>
+                      <li>Generate an API key from your dashboard</li>
+                      <li>Select OpenRouter in API Settings, paste the key, and click Save</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
               <!-- Real-time note callout -->
-              <div class="win-flat-card info-callout-card" style="margin-top: 20px; border-left: 4px solid var(--win-accent); background-color: var(--win-accent-light); padding: 14px;">
-                <span class="inspect-meta-title" style="color: var(--win-accent); font-weight: 700; display: flex; align-items: center; gap: 6px; font-size: 11px;"><i data-lucide="info"></i> Interactive Score Recalculation Note</span>
-                <p style="font-size: 11px; line-height: 1.5; color: var(--win-text-secondary); margin-top: 6px;">
-                  If <strong>Local Cosine Similarity</strong> or <strong>Keyword Overlap (TF-IDF)</strong> is selected as the Similarity Method, all matches, scores, and alignment maps update **instantly** as you change strategies, drag sliders, or edit raw text in the Chunk Playground. If <strong>AI Judge</strong> is selected, a new evaluation must be run to update the LLM metrics after changes.
+              <div class="win-flat-card info-callout-card">
+                <span class="inspect-meta-title callout-title"><i data-lucide="info"></i> Local vs AI scoring</span>
+                <p class="callout-desc">
+                  <strong>Keyword Overlap (TF-IDF)</strong> and <strong>Local Cosine Similarity</strong> update instantly as you change settings — no API key needed. <strong>AI Judge</strong> provides recruiter-quality scores and rewrite suggestions but requires an API key and a fresh evaluation after you change chunk settings.
                 </p>
               </div>
 
